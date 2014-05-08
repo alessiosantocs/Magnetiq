@@ -1,0 +1,299 @@
+#keyboard {
+background: url(../images/spray_keyboard.png) no-repeat;
+width: 32px;
+height: 21px;
+}
+#keyboard:hover{
+	-webkit-animation: animKeyboard steps(1) infinite 2s;
+}
+
+.folio_arrow{
+	background:url(../images/spray_arrow.png) top no-repeat;
+	height:61px;
+	position:absolute;
+	width:34px;
+	cursor:pointer;
+	opacity:0.7;
+	transition:opacity .2s ease;
+	-webkit-transition:opacity .2s ease;
+	-moz-transition:opacity .2s ease;
+	-o-transition:opacity .2s ease;
+	z-index:3000;
+}
+.folio_arrow:hover{
+	opacity:1;
+}
+.folio_arrow#left_arrow{top:40%; left:20px;}
+.folio_arrow#left_arrow::before{content:attr(data-rimasti);}
+.folio_arrow#right_arrow{top:40%; right:20px; background-position:0px -61px;}
+.spoiler{
+	position:relative;
+	top:106%;
+	padding-top:10px;
+	height:50px;
+	text-align:center;
+	overflow:hidden;
+}
+.spoiler .value{
+	display:inline-block;
+	position:relative; 
+	top:-50px;
+	margin:auto;
+	background:#c22727; 
+	color:#f4f4f4; 
+	font-weight:bold;
+	padding:5px;
+	border-top:5px solid #f4f4f4;
+	border-radius: 0px 0px 3px 3px;
+	text-align:center;
+	-webkit-transition:top .5s ease;
+	-moz-transition:top .5s ease;
+	-o-transition:top .5s ease;
+	-ms-transition:top .5s ease;
+	transition:top .5s ease;
+}
+.kind {
+	padding: 5px;
+	background: #29AAE3 url(../images/spray_kind.png) no-repeat;
+	font-size: 13px;
+	color: white;
+	border-radius: 2px;
+	background-position: 91% 7px;
+	padding-right: 20px;
+}
+.folio_arrow:hover .spoiler .value{
+	top:-10px;
+}
+
+.message {
+	transition:all .2s ease;
+	-webkit-transition:all .2s ease;
+	-moz-transition:all .2s ease;
+	-o-transition:all .2s ease;
+	position: absolute;
+	width: 150px;
+	cursor:default;
+}
+#canv_message{
+	color:#a8a8a8;
+	position:absolute;
+	font-size:15px;
+	top:-20%;
+	background:#f4f4f4;
+	left:45%;
+	text-align:center;
+	right:40%;
+	transition:all .2s ease;
+	-webkit-transition:all .2s ease;
+	-moz-transition:all .2s ease;
+	-o-transition:all .2s ease;
+}
+.message .title{
+	font-size:15px;
+	font-weight:bold;
+	color:#848484;
+	background:#F4F4F4;
+	display:inline;
+}
+.message .description{
+	font-size:13px;
+	font-weight:normal;
+	color:#bdbdbd;
+	background:#F4F4F4;
+	display:inline;
+
+}
+#skills{
+	margin:15px auto;
+}
+#top_mark{
+	display:inline-block;
+	font-size:18px;
+	cursor:default;
+}
+#top_mark.back{cursor:pointer;}
+#contact_me{
+	font-size:35px;
+	padding:15px;
+}
+#descr_container{
+	position:absolute;
+	width:100%;
+	min-width: 800px;
+	height:500px;
+	top:43px;
+	overflow:hidden;
+	z-index:-1000;
+	-webkit-transition:all .5s ease;
+	-moz-transition:all .5s ease;
+	-o-transition:all .5s ease;
+	transition:all .5s ease;
+
+}
+
+#descr_container.show {z-index: 1000;background-color:#f4f4f4;}
+#descr_container.show .work_descr {	margin-left: 0%;}
+
+#descr_container.piega {background-color: transparent;}
+#descr_container.piega .work_descr{
+	margin-top: 78px;
+	margin-left: -10px;
+	-webkit-transform: rotate(2deg);
+}
+
+#portfolio{
+	-webkit-transition:opacity .5s ease;
+	-moz-transition:opacity .5s ease;
+	-o-transition:opacity .5s ease;
+	transition:opacity .5s ease;
+}
+#tour {
+	background: url(../images/stepone.png) no-repeat, url(../images/steptwo.png) no-repeat,url(../images/stepthree.png) no-repeat ;
+	background-position:center, 205%,250%;
+	background-color:#e5e5e5;
+	top: 43px;
+	position: absolute;
+	left: 0;
+	right: 0;
+	padding-top:200px;
+	height: 300px;
+	text-align: center;
+	color:#a8a8a8;
+	font-size:15px;
+	-webkit-transition:all ease .5s;
+	-o-transition:all ease .5s;
+	-moz-transition:all ease .5s;
+	transition:all ease .5s;
+}
+#progress_bar {
+	height: 5px;
+	background: #CCC;
+	margin: auto;
+	width: 620px;
+	overflow: hidden;
+}
+#bar_value {
+	background: #11B9FF;
+	height: 5px;
+	width: 10%;
+	margin-left: 0%;
+	-webkit-transition: margin-left .5s ease;
+	-moz-transition: margin-left .5s ease;
+	-o-transition: margin-left .5s ease;
+	-ms-transition: margin-left .5s ease;
+	transition: margin-left .5s ease;
+}
+.work_descr{
+	height:400px;
+	background:#404040;
+	width:100%;
+	margin:50px 0px;
+	min-width:800px;
+	margin-left:100%;
+	-webkit-transition:all .5s ease;
+	-moz-transition:all .5s ease;
+	-o-transition:all .5s ease;
+	transition:all .5s ease;
+}
+.work_descr .description{
+	display:table-cell;
+	height:400px;
+	vertical-align: middle;
+	padding:0px 40px;
+}
+.work_descr .description .title{
+	color:white;
+	margin:5px 0px;
+	font-weight:normal;
+}
+.work_descr .description p{
+	color:#bdbdbd;
+	font-size:13px;
+	margin:5px 0px;
+	padding-left:5px;
+	border-left:5px solid #828282;
+	max-height:200px;
+	overflow:auto;
+}
+
+.work_descr .pre_slider{
+	height: 480px;
+	width: 480px;
+	overflow: hidden;
+	border-radius: 500px 500px 500px 500px;
+	float:left;
+	margin:auto;
+	margin-left: 40px;
+	margin-top:-40px;
+}
+.work_descr .pre_slider .actions{
+	margin-top: -100px;
+	text-align: center;
+}
+.pre_slider .slider{
+	width: 480px;
+	height: 480px;
+	border-radius: 500px;
+	overflow: hidden;
+	overflow-y:auto;
+}
+.pre_slider .slider img{
+	width:480px;
+	margin:0;
+	display:block;
+}
+
+#about {
+	padding-top: 30px;
+	background: #D6D6D6;
+	text-align: left;
+}
+.social {
+	width: 180px;
+	display: inline-block;
+	text-align: center;
+	margin-bottom: 40px;
+	margin-right: 40px;
+}
+.social_name {
+	font-size: 30px;
+	color: #4D4D4D;
+	margin-top: 5px;
+	text-shadow: 0px 1px 0px #BBB;
+	-webkit-transition: text-shadow .3s ease;
+	-moz-transition: text-shadow .3s ease;
+	-o-transition: text-shadow .3s ease;
+	-ms-transition: text-shadow .3s ease;
+	transition: text-shadow .3s ease;
+}
+.social:hover .social_name {
+	text-shadow: 0px 5px 0px #BBB;
+}
+.bio {
+	width: 180px;
+	display: inline-block;
+	font-size: 30px;
+	padding: 20px;
+	color: #4D4D4D;
+	text-shadow: 0px 1px 0px #BBB;
+	-webkit-transition: text-shadow .3s ease;
+	-moz-transition: text-shadow .3s ease;
+	-o-transition: text-shadow .3s ease;
+	-ms-transition: text-shadow .3s ease;
+	transition: text-shadow .3s ease;
+}
+.bio:hover {text-shadow: 0px 5px 0px #BBB;}
+.social img{
+	-webkit-transition:-webkit-transform .5s ease;
+	-moz-transition:-moz-transform .5s ease;
+	-o-transition:-o-transform .5s ease;
+	-ms-transition:-ms-transform .5s ease;
+	transition:transform .5s ease;
+}
+.social:hover img{
+	-webkit-transform:rotate(-20deg);
+	-moz-transform:rotate(-20deg);
+	-o-transform:rotate(-20deg);
+	-ms-transform:rotate(-20deg);
+	transform:rotate(-20deg);
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width; initial-scale=1; maximum-scale=1; user-scalable=no;">
+    <meta name="apple-mobile-web-app-capable" content="yes" >
+
+    <meta charset="ISO-8859-1">
+    
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+	<script src="js/magnetiq.js"></script>
+	<script>
+		var m;
+		function init(){
+			var Magnetiq = new MagnetiqWorld();
+			m = Magnetiq;
+		}
+			
+	</script>
+    <title>Magnetiq</title>
+</head>
+<body onload="init()">
+<div id="game">
+
+	<canvas id="magnetiq">
+		<img id="fx_exp" alt="img" src="images/explosion.svg" />
+	</canvas>
+	<div id="menu">
+		<div id="start-game">Start Game</div>
+	</div>
+	<div id="game-status">Game info here</div>
+	<div id="fps_count">FPS</div>
+
+
+</div>
+</body>
+</html>
