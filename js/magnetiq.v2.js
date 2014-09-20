@@ -128,6 +128,31 @@
 
   })(Point);
 
+  Interaction = (function() {
+    function Interaction(options) {
+      var interaction;
+      if (options == null) {
+        options = {};
+      }
+      this.canvas = options.canvas;
+      this.pointers = [new Pointer()];
+      interaction = this;
+      this.canvas.addEventListener("mousemove", function(event) {
+        event.preventDefault();
+        interaction.pointers[0].preDigest();
+        interaction.pointers[0].x = event.pageX;
+        return interaction.pointers[0].y = event.pageY;
+      });
+    }
+
+    Interaction.prototype.toPointArray = function() {
+      return this.pointers;
+    };
+
+    return Interaction;
+
+  })();
+
   MagnetiqEngine = (function() {
     var drawIntoFinalCanvas, drawSceneIntoCanvas, drawSceneIntoCanvasFn, requestAnimFrame;
 
@@ -210,6 +235,97 @@
 
   })();
 
+  Pointer = (function(_super) {
+    var trackLengthLimit;
+
+    __extends(Pointer, _super);
+
+    trackLengthLimit = 50;
+
+    function Pointer(options) {
+      if (options == null) {
+        options = {};
+      }
+      Pointer.__super__.constructor.call(this, options);
+      this.track = new Track();
+    }
+
+    Pointer.prototype.preDigest = function() {
+      this.track.push(new Point({
+        x: this.x,
+        y: this.y
+      }));
+      if (this.track.length > trackLengthLimit) {
+        return this.track.shift();
+      }
+    };
+
+    Pointer.prototype.slowTrackHeadDown = function() {
+      var coeffX, coeffY, dX, dY, point, previous_point, track_head, x, y, _i, _len, _ref, _results;
+      track_head = this.track.head();
+      dX = Math.abs(this.x - track_head.x);
+      dY = Math.abs(this.y - track_head.y);
+      x = 0;
+      y = 0;
+      coeffX = dX / 20;
+      coeffY = dY / 20;
+      if (this.x > track_head.x) {
+        x = coeffX;
+      } else {
+        x = -coeffX;
+      }
+      if (this.y > track_head.y) {
+        y = coeffY;
+      } else {
+        y = -coeffY;
+      }
+      track_head.x += x;
+      track_head.y += y;
+      _ref = this.track;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        point = _ref[_i];
+        if (!this.track[_i + 1]) {
+          continue;
+        }
+        previous_point = this.track[_i + 1];
+        point.x = previous_point.x;
+        _results.push(point.y = previous_point.y);
+      }
+      return _results;
+    };
+
+    Pointer.prototype.drawIntoCanvas = function(ctx) {
+      var point, pointer_color, previous_point, _i, _len, _ref;
+      if (this.track.head()) {
+        this.slowTrackHeadDown();
+        ctx.fillStyle = "#f00";
+        ctx.arc(this.track.head().x, this.track.head().y, this.radius || 5, 0, Math.PI * 2, false);
+        ctx.fill();
+      }
+      pointer_color = "#aeff00";
+      ctx.fillStyle = pointer_color;
+      ctx.strokeStyle = pointer_color;
+      ctx.lineWidth = pointer_color;
+      ctx.beginPath();
+      _ref = this.track;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        point = _ref[_i];
+        if (_i === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          previous_point = this.track[_i - 1];
+          ctx.quadraticCurveTo(previous_point.x, previous_point.y, previous_point.x + (point.x - previous_point.x) / 2, previous_point.y + (point.y - previous_point.y) / 2);
+        }
+      }
+      ctx.stroke();
+      return ctx.closePath();
+    };
+
+    return Pointer;
+
+  })(Point);
+
   Scene = (function() {
     function Scene(options) {
       if (options == null) {
@@ -257,68 +373,6 @@
 
   })(Corps);
 
-  Pointer = (function(_super) {
-    var trackLengthLimit;
-
-    __extends(Pointer, _super);
-
-    trackLengthLimit = 50;
-
-    function Pointer(options) {
-      if (options == null) {
-        options = {};
-      }
-      Pointer.__super__.constructor.call(this, options);
-      this.track = new Track();
-      this.startEating();
-    }
-
-    Pointer.prototype.preDigest = function() {
-      this.track.push(new Point({
-        x: this.x,
-        y: this.y
-      }));
-      if (this.track.length > trackLengthLimit) {
-        return this.track.shift();
-      }
-    };
-
-    Pointer.prototype.startEating = function() {
-      var instance;
-      instance = this;
-      return setInterval(function() {
-        if (instance.track.length > 1) {
-          return instance.track.shift();
-        }
-      }, 100);
-    };
-
-    Pointer.prototype.drawIntoCanvas = function(ctx) {
-      var point, pointer_color, previous_point, _i, _len, _ref;
-      Pointer.__super__.drawIntoCanvas.call(this, ctx);
-      pointer_color = "#aeff00";
-      ctx.fillStyle = pointer_color;
-      ctx.strokeStyle = pointer_color;
-      ctx.lineWidth = pointer_color;
-      ctx.beginPath();
-      _ref = this.track;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        point = _ref[_i];
-        if (_i === 0) {
-          ctx.moveTo(point.x, point.y);
-        } else {
-          previous_point = this.track[_i - 1];
-          ctx.quadraticCurveTo(previous_point.x, previous_point.y, previous_point.x + (point.x - previous_point.x) / 2, previous_point.y + (point.y - previous_point.y) / 2);
-        }
-      }
-      ctx.stroke();
-      return ctx.closePath();
-    };
-
-    return Pointer;
-
-  })(Point);
-
   Track = (function(_super) {
     __extends(Track, _super);
 
@@ -326,34 +380,13 @@
       Track.__super__.constructor.call(this, options);
     }
 
+    Track.prototype.head = function() {
+      return this[this.length - 1];
+    };
+
     return Track;
 
   })(Array);
-
-  Interaction = (function() {
-    function Interaction(options) {
-      var interaction;
-      if (options == null) {
-        options = {};
-      }
-      this.canvas = options.canvas;
-      this.pointers = [new Pointer()];
-      interaction = this;
-      this.canvas.addEventListener("mousemove", function(event) {
-        event.preventDefault();
-        interaction.pointers[0].preDigest();
-        interaction.pointers[0].x = event.pageX;
-        return interaction.pointers[0].y = event.pageY;
-      });
-    }
-
-    Interaction.prototype.toPointArray = function() {
-      return this.pointers;
-    };
-
-    return Interaction;
-
-  })();
 
   Universe = (function(_super) {
     __extends(Universe, _super);
