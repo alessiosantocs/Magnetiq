@@ -4,6 +4,8 @@ class Star extends Corps
 
     @radius = 10
 
+    {@marginRadius} = options
+
   # Override this method to give custom appearance
   drawIntoCanvas: (ctx)->
     ctx.fillStyle = "#00f"
