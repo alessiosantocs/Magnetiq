@@ -7,9 +7,9 @@ class Point
 
   # Set everything in the object and then call the digest()
   set: (property, value)->
+    @preDigest()
     @[property] = value
-
-    @digest()
+    @postDigest()
 
     @[property] # Returns the property just edited
 
@@ -17,6 +17,8 @@ class Point
   drawIntoCanvas: (ctx)->
     ctx.fillStyle = "#f00"
     ctx.arc(@x, @y, @radius || 5, 0, Math.PI * 2, false)
-
+    ctx.fill()
+    
   # Override this method to give custom digest
-  digest: ->
+  preDigest: ->
+  postDigest: ->

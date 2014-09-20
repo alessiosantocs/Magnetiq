@@ -1,5 +1,5 @@
 (function() {
-  var Corps, Galaxy, MagnetiqEngine, Orbit, Point, Scene, Star, Universe,
+  var Corps, Galaxy, Interaction, MagnetiqEngine, Orbit, Point, Pointer, Scene, Star, Track, Universe,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -14,17 +14,21 @@
     }
 
     Point.prototype.set = function(property, value) {
+      this.preDigest();
       this[property] = value;
-      this.digest();
+      this.postDigest();
       return this[property];
     };
 
     Point.prototype.drawIntoCanvas = function(ctx) {
       ctx.fillStyle = "#f00";
-      return ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
+      ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
+      return ctx.fill();
     };
 
-    Point.prototype.digest = function() {};
+    Point.prototype.preDigest = function() {};
+
+    Point.prototype.postDigest = function() {};
 
     return Point;
 
@@ -55,6 +59,11 @@
       this.radius = options.radius, this.parentPoint = options.parentPoint;
       this.radius || (this.radius = 5);
     }
+
+    Corps.prototype.drawIntoCanvas = function(ctx) {
+      this.moveInOrbit();
+      return Corps.__super__.drawIntoCanvas.call(this, ctx);
+    };
 
     Corps.prototype.moveInOrbit = function() {
       var point;
@@ -142,11 +151,7 @@
       for (_i = 0, _len = objects.length; _i < _len; _i++) {
         object = objects[_i];
         ctx.beginPath();
-        if (object["moveInOrbit"]) {
-          object.moveInOrbit();
-        }
         object.drawIntoCanvas(ctx);
-        ctx.fill();
       }
       if (final_ctx) {
         return drawIntoFinalCanvas(canvas, final_ctx);
@@ -210,12 +215,15 @@
       if (options == null) {
         options = {};
       }
-      this.universes = options.universes;
+      this.universes = options.universes, this.interaction = options.interaction;
     }
 
     Scene.prototype.toPointArray = function() {
       var array, universe, _i, _len, _ref;
       array = [];
+      if (this.interaction) {
+        array = array.concat(this.interaction.toPointArray());
+      }
       _ref = this.universes;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         universe = _ref[_i];
@@ -248,6 +256,104 @@
     return Star;
 
   })(Corps);
+
+  Pointer = (function(_super) {
+    var trackLengthLimit;
+
+    __extends(Pointer, _super);
+
+    trackLengthLimit = 50;
+
+    function Pointer(options) {
+      if (options == null) {
+        options = {};
+      }
+      Pointer.__super__.constructor.call(this, options);
+      this.track = new Track();
+      this.startEating();
+    }
+
+    Pointer.prototype.preDigest = function() {
+      this.track.push(new Point({
+        x: this.x,
+        y: this.y
+      }));
+      if (this.track.length > trackLengthLimit) {
+        return this.track.shift();
+      }
+    };
+
+    Pointer.prototype.startEating = function() {
+      var instance;
+      instance = this;
+      return setInterval(function() {
+        if (instance.track.length > 1) {
+          return instance.track.shift();
+        }
+      }, 100);
+    };
+
+    Pointer.prototype.drawIntoCanvas = function(ctx) {
+      var point, pointer_color, previous_point, _i, _len, _ref;
+      Pointer.__super__.drawIntoCanvas.call(this, ctx);
+      pointer_color = "#aeff00";
+      ctx.fillStyle = pointer_color;
+      ctx.strokeStyle = pointer_color;
+      ctx.lineWidth = pointer_color;
+      ctx.beginPath();
+      _ref = this.track;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        point = _ref[_i];
+        if (_i === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          previous_point = this.track[_i - 1];
+          ctx.quadraticCurveTo(previous_point.x, previous_point.y, previous_point.x + (point.x - previous_point.x) / 2, previous_point.y + (point.y - previous_point.y) / 2);
+        }
+      }
+      ctx.stroke();
+      return ctx.closePath();
+    };
+
+    return Pointer;
+
+  })(Point);
+
+  Track = (function(_super) {
+    __extends(Track, _super);
+
+    function Track(options) {
+      Track.__super__.constructor.call(this, options);
+    }
+
+    return Track;
+
+  })(Array);
+
+  Interaction = (function() {
+    function Interaction(options) {
+      var interaction;
+      if (options == null) {
+        options = {};
+      }
+      this.canvas = options.canvas;
+      this.pointers = [new Pointer()];
+      interaction = this;
+      this.canvas.addEventListener("mousemove", function(event) {
+        event.preventDefault();
+        interaction.pointers[0].preDigest();
+        interaction.pointers[0].x = event.pageX;
+        return interaction.pointers[0].y = event.pageY;
+      });
+    }
+
+    Interaction.prototype.toPointArray = function() {
+      return this.pointers;
+    };
+
+    return Interaction;
+
+  })();
 
   Universe = (function(_super) {
     __extends(Universe, _super);
@@ -296,8 +402,12 @@
     universe = new Universe({
       galaxies: [galaxy]
     });
+    window.interaction = new Interaction({
+      canvas: document.getElementById("magnetiq")
+    });
     scene = new Scene({
-      universes: [universe]
+      universes: [universe],
+      interaction: interaction
     });
     window.galaxy = galaxy;
     engine = new MagnetiqEngine({

@@ -3,7 +3,13 @@ window.onload = ->
   star = new Star({marginRadius: 50})
   galaxy = new Galaxy({star: star, corpses: [corps]})
   universe = new Universe({galaxies: [galaxy]})
-  scene = new Scene({universes: [universe]})
+
+
+  window.interaction = new Interaction
+    canvas: document.getElementById("magnetiq")
+
+
+  scene = new Scene({universes: [universe], interaction: interaction})
 
   window.galaxy = galaxy
 

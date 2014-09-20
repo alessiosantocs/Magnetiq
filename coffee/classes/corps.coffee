@@ -20,6 +20,10 @@ class Corps extends Point
 
     @radius ||= 5
 
+  drawIntoCanvas: (ctx)->
+    @moveInOrbit()
+    super ctx
+
   moveInOrbit: ()->
     if @orbit
       point = @orbit.corpsPositionFromTimestamp Date.now()

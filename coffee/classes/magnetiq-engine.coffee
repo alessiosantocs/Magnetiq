@@ -23,11 +23,9 @@ class MagnetiqEngine
 
     # Add every object (canvas ready object) to the scene
     for object in objects
-      ctx.beginPath();
-      if object["moveInOrbit"]
-        object.moveInOrbit()
+      ctx.beginPath()
+
       object.drawIntoCanvas(ctx)
-      ctx.fill();
 
     # Draw into final canvas
     if final_ctx
@@ -37,11 +35,14 @@ class MagnetiqEngine
     final_ctx.clearRect(0,0,canvas.width,canvas.height)
     final_ctx.drawImage(canvas, 0, 0)
 
+
   # Ask for canvas and scene ({canvas: <canvas>, scene: Scene object})
   constructor: (options={})->
     {@canvas, @scene} = options
 
     @ctx = @canvas.getContext "2d"
+
+
   # Start rendering on the canvas
   startEngine: ->
     @pre_canvas = document.createElement "canvas"
