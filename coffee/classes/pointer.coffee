@@ -3,18 +3,24 @@ class Pointer extends Point
   constructor: (options={})->
     super options
 
-    @track = new Track()
+    @pickupRadius = 300
 
-    # @startEating()
-  preDigest: ->
-    @track.push new Point
-      x: @x
-      y: @y
-    
-    if @track.length > trackLengthLimit
-      @track.shift()
+    @track = new Track(50, options.defaultPoint)
 
-  slowTrackHeadDown: ->
+
+  recordMovement: (x, y)->
+    dx = x - @x
+    dy = y - @y
+    distance = Math.sqrt(dx*dx + dy*dy)
+
+    if distance < @pickupRadius
+      @x = x
+      @y = y
+
+  # I use it to smooth out the tail and the head of the pointer
+  update: ->
+    smooth_coefficent = 10
+
     track_head = @track.head()
     dX = Math.abs(@x - track_head.x)
     dY = Math.abs(@y - track_head.y)
@@ -22,8 +28,8 @@ class Pointer extends Point
     x = 0
     y = 0
 
-    coeffX = dX / 20
-    coeffY = dY / 20
+    coeffX = dX / smooth_coefficent
+    coeffY = dY / smooth_coefficent
 
     if @x > track_head.x
       x = coeffX
@@ -39,19 +45,12 @@ class Pointer extends Point
     track_head.y += y
 
     for point in @track when @track[_i + 1]
-      previous_point = @track[_i + 1]
-      point.x = previous_point.x
-      point.y = previous_point.y
+      next_point = @track[_i + 1]
+      point.x = next_point.x
+      point.y = next_point.y
 
   drawIntoCanvas: (ctx)->
-
-    # Draw the ball
-    if @track.head()
-      @slowTrackHeadDown()
-
-      ctx.fillStyle = "#f00"
-      ctx.arc(@track.head().x, @track.head().y, @radius || 5, 0, Math.PI * 2, false)
-      ctx.fill()
+    @update()
 
     pointer_color = "#aeff00"
     ctx.fillStyle = pointer_color
@@ -74,3 +73,11 @@ class Pointer extends Point
 
     ctx.stroke()
     ctx.closePath()
+
+    # Draw the ball
+    if @track.head()
+      ctx.beginPath()
+
+      ctx.fillStyle = pointer_color
+      ctx.arc(@track.head().x, @track.head().y, @radius || 5, 0, Math.PI * 2, false)
+      ctx.fill()

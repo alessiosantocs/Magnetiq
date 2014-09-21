@@ -139,9 +139,7 @@
       interaction = this;
       this.canvas.addEventListener("mousemove", function(event) {
         event.preventDefault();
-        interaction.pointers[0].preDigest();
-        interaction.pointers[0].x = event.pageX;
-        return interaction.pointers[0].y = event.pageY;
+        return interaction.pointers[0].recordMovement(event.pageX, event.pageY);
       });
     }
 
@@ -247,28 +245,31 @@
         options = {};
       }
       Pointer.__super__.constructor.call(this, options);
-      this.track = new Track();
+      this.pickupRadius = 300;
+      this.track = new Track(50, options.defaultPoint);
     }
 
-    Pointer.prototype.preDigest = function() {
-      this.track.push(new Point({
-        x: this.x,
-        y: this.y
-      }));
-      if (this.track.length > trackLengthLimit) {
-        return this.track.shift();
+    Pointer.prototype.recordMovement = function(x, y) {
+      var distance, dx, dy;
+      dx = x - this.x;
+      dy = y - this.y;
+      distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance < this.pickupRadius) {
+        this.x = x;
+        return this.y = y;
       }
     };
 
-    Pointer.prototype.slowTrackHeadDown = function() {
-      var coeffX, coeffY, dX, dY, point, previous_point, track_head, x, y, _i, _len, _ref, _results;
+    Pointer.prototype.update = function() {
+      var coeffX, coeffY, dX, dY, next_point, point, smooth_coefficent, track_head, x, y, _i, _len, _ref, _results;
+      smooth_coefficent = 10;
       track_head = this.track.head();
       dX = Math.abs(this.x - track_head.x);
       dY = Math.abs(this.y - track_head.y);
       x = 0;
       y = 0;
-      coeffX = dX / 20;
-      coeffY = dY / 20;
+      coeffX = dX / smooth_coefficent;
+      coeffY = dY / smooth_coefficent;
       if (this.x > track_head.x) {
         x = coeffX;
       } else {
@@ -288,21 +289,16 @@
         if (!this.track[_i + 1]) {
           continue;
         }
-        previous_point = this.track[_i + 1];
-        point.x = previous_point.x;
-        _results.push(point.y = previous_point.y);
+        next_point = this.track[_i + 1];
+        point.x = next_point.x;
+        _results.push(point.y = next_point.y);
       }
       return _results;
     };
 
     Pointer.prototype.drawIntoCanvas = function(ctx) {
       var point, pointer_color, previous_point, _i, _len, _ref;
-      if (this.track.head()) {
-        this.slowTrackHeadDown();
-        ctx.fillStyle = "#f00";
-        ctx.arc(this.track.head().x, this.track.head().y, this.radius || 5, 0, Math.PI * 2, false);
-        ctx.fill();
-      }
+      this.update();
       pointer_color = "#aeff00";
       ctx.fillStyle = pointer_color;
       ctx.strokeStyle = pointer_color;
@@ -319,7 +315,13 @@
         }
       }
       ctx.stroke();
-      return ctx.closePath();
+      ctx.closePath();
+      if (this.track.head()) {
+        ctx.beginPath();
+        ctx.fillStyle = pointer_color;
+        ctx.arc(this.track.head().x, this.track.head().y, this.radius || 5, 0, Math.PI * 2, false);
+        return ctx.fill();
+      }
     };
 
     return Pointer;
@@ -376,8 +378,18 @@
   Track = (function(_super) {
     __extends(Track, _super);
 
-    function Track(options) {
-      Track.__super__.constructor.call(this, options);
+    function Track(numberOfElements, defaultPoint) {
+      var time, _i, _len, _ref;
+      Track.__super__.constructor.call(this, numberOfElements);
+      defaultPoint || (defaultPoint = new Point({
+        x: 0,
+        y: 0
+      }));
+      _ref = new Array(numberOfElements);
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        time = _ref[_i];
+        this.push(new Point(defaultPoint));
+      }
     }
 
     Track.prototype.head = function() {
