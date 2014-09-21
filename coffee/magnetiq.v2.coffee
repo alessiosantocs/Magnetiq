@@ -18,5 +18,16 @@ window.onload = ->
   engine.startEngine()
 
   galaxy.generateCorpses
-    quantity: 100
+    quantity: 190
     radius: 200
+
+  collisionsHandler = new CollisionsHandler()
+  collisionsHandler.onCollisionAmongst galaxy.corpses, [interaction.pointers[0].track.head()], (collisions)->
+    console.log "The pointer has collided", collisions
+    for collision in collisions
+      collision.basePoint.fillColor = "#f00"
+
+  collisionsHandler.onCollisionAmongst galaxy.corpses, galaxy.corpses, (collisions)->
+    console.log "There has been a collision between corpses", collisions
+    for collision in collisions
+      collision.basePoint.fillColor = "#00f"

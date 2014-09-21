@@ -5,6 +5,8 @@ class Point
     @x ||= 0
     @y ||= 0
 
+    @fillColor = "#f00"
+
   # Set everything in the object and then call the digest()
   set: (property, value)->
     @preDigest()
@@ -15,10 +17,10 @@ class Point
 
   # Override this method to give custom appearance
   drawIntoCanvas: (ctx)->
-    ctx.fillStyle = "#f00"
+    ctx.fillStyle = @fillColor
     ctx.arc(@x, @y, @radius || 5, 0, Math.PI * 2, false)
     ctx.fill()
-    
+
   # Override this method to give custom digest
   preDigest: ->
   postDigest: ->

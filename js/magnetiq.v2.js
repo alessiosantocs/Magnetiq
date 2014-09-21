@@ -1,5 +1,5 @@
 (function() {
-  var Corps, Galaxy, Interaction, MagnetiqEngine, Orbit, Point, Pointer, Scene, Star, Track, Universe,
+  var Collision, CollisionsHandler, Corps, Galaxy, Interaction, MagnetiqEngine, Orbit, Point, Pointer, Scene, Star, Track, Universe,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -11,6 +11,7 @@
       this.x = options.x, this.y = options.y;
       this.x || (this.x = 0);
       this.y || (this.y = 0);
+      this.fillColor = "#f00";
     }
 
     Point.prototype.set = function(property, value) {
@@ -21,7 +22,7 @@
     };
 
     Point.prototype.drawIntoCanvas = function(ctx) {
-      ctx.fillStyle = "#f00";
+      ctx.fillStyle = this.fillColor;
       ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
       return ctx.fill();
     };
@@ -31,6 +32,60 @@
     Point.prototype.postDigest = function() {};
 
     return Point;
+
+  })();
+
+  Collision = (function() {
+    function Collision(options) {
+      this.basePoint = options.basePoint, this.controlPoint = options.controlPoint;
+    }
+
+    return Collision;
+
+  })();
+
+  CollisionsHandler = (function() {
+    function CollisionsHandler() {}
+
+    CollisionsHandler.prototype.detectCollisionsAmongst = function(pointsGroup1, pointsGroup2) {
+      var collisionCoefficentRadius, collisionsArray, controlPoint, distanceFromObject, dx, dy, point, _i, _j, _len, _len1;
+      collisionsArray = [];
+      for (_i = 0, _len = pointsGroup2.length; _i < _len; _i++) {
+        controlPoint = pointsGroup2[_i];
+        for (_j = 0, _len1 = pointsGroup1.length; _j < _len1; _j++) {
+          point = pointsGroup1[_j];
+          if (!(point !== controlPoint)) {
+            continue;
+          }
+          dx = controlPoint.x - point.x;
+          dy = controlPoint.y - point.y;
+          distanceFromObject = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+          collisionCoefficentRadius = (point.radius || 3) + (controlPoint.radius || 3);
+          if (distanceFromObject <= collisionCoefficentRadius) {
+            collisionsArray.push(new Collision({
+              basePoint: point,
+              controlPoint: controlPoint
+            }));
+          }
+        }
+      }
+      return collisionsArray;
+    };
+
+    CollisionsHandler.prototype.onCollisionAmongst = function(pointsGroup1, pointsGroup2, handler) {
+      var instance;
+      instance = this;
+      setInterval(function() {
+        var collisions;
+        collisions = instance.detectCollisionsAmongst(pointsGroup1, pointsGroup2);
+        if (collisions.length > 0) {
+          return handler(collisions);
+        }
+      }, 100);
+      return this;
+    };
+
+    return CollisionsHandler;
 
   })();
 
@@ -135,7 +190,14 @@
         options = {};
       }
       this.canvas = options.canvas;
-      this.pointers = [new Pointer()];
+      this.pointers = [
+        new Pointer({
+          defaultPoint: new Point({
+            x: window.innerWidth,
+            y: window.innerHeight
+          })
+        })
+      ];
       interaction = this;
       this.canvas.addEventListener("mousemove", function(event) {
         event.preventDefault();
@@ -245,7 +307,16 @@
         options = {};
       }
       Pointer.__super__.constructor.call(this, options);
-      this.pickupRadius = 300;
+      this.pickupRadius = options.pickupRadius;
+      this.pickupRadius || (this.pickupRadius = 300);
+      this.fillColor = "#0f0";
+      this.radius = 5;
+      options.defaultPoint || (options.defaultPoint = new Point({
+        x: 0,
+        y: 0
+      }));
+      this.x = options.defaultPoint.x;
+      this.y = options.defaultPoint.y;
       this.track = new Track(50, options.defaultPoint);
     }
 
@@ -299,7 +370,7 @@
     Pointer.prototype.drawIntoCanvas = function(ctx) {
       var point, pointer_color, previous_point, _i, _len, _ref;
       this.update();
-      pointer_color = "#aeff00";
+      pointer_color = this.fillColor;
       ctx.fillStyle = pointer_color;
       ctx.strokeStyle = pointer_color;
       ctx.lineWidth = pointer_color;
@@ -320,8 +391,11 @@
         ctx.beginPath();
         ctx.fillStyle = pointer_color;
         ctx.arc(this.track.head().x, this.track.head().y, this.radius || 5, 0, Math.PI * 2, false);
-        return ctx.fill();
+        ctx.fill();
       }
+      ctx.beginPath();
+      ctx.arc(this.track.head().x, this.track.head().y, (this.radius || 5) * 5, 0, Math.PI * 2, false);
+      return ctx.stroke();
     };
 
     return Pointer;
@@ -367,8 +441,10 @@
     }
 
     Star.prototype.drawIntoCanvas = function(ctx) {
+      ctx.beginPath();
       ctx.fillStyle = "#00f";
-      return ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
+      ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
+      return ctx.fill();
     };
 
     return Star;
@@ -432,7 +508,7 @@
   })(Point);
 
   window.onload = function() {
-    var corps, engine, galaxy, scene, star, universe;
+    var collisionsHandler, corps, engine, galaxy, scene, star, universe;
     corps = new Corps({
       x: 10,
       y: 10
@@ -461,9 +537,30 @@
     });
     window.engine = engine;
     engine.startEngine();
-    return galaxy.generateCorpses({
-      quantity: 100,
+    galaxy.generateCorpses({
+      quantity: 190,
       radius: 200
+    });
+    collisionsHandler = new CollisionsHandler();
+    collisionsHandler.onCollisionAmongst(galaxy.corpses, [interaction.pointers[0].track.head()], function(collisions) {
+      var collision, _i, _len, _results;
+      console.log("The pointer has collided", collisions);
+      _results = [];
+      for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+        collision = collisions[_i];
+        _results.push(collision.basePoint.fillColor = "#f00");
+      }
+      return _results;
+    });
+    return collisionsHandler.onCollisionAmongst(galaxy.corpses, galaxy.corpses, function(collisions) {
+      var collision, _i, _len, _results;
+      console.log("There has been a collision between corpses", collisions);
+      _results = [];
+      for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+        collision = collisions[_i];
+        _results.push(collision.basePoint.fillColor = "#00f");
+      }
+      return _results;
     });
   };
 

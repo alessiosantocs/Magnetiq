@@ -3,7 +3,19 @@ class Pointer extends Point
   constructor: (options={})->
     super options
 
-    @pickupRadius = 300
+    {@pickupRadius} = options
+
+    # Default pickup radius
+    @pickupRadius ||= 300
+    @fillColor = "#0f0"
+    @radius = 5
+
+    options.defaultPoint ||= new Point
+      x: 0
+      y: 0
+
+    @x = options.defaultPoint.x
+    @y = options.defaultPoint.y
 
     @track = new Track(50, options.defaultPoint)
 
@@ -52,7 +64,7 @@ class Pointer extends Point
   drawIntoCanvas: (ctx)->
     @update()
 
-    pointer_color = "#aeff00"
+    pointer_color = @fillColor
     ctx.fillStyle = pointer_color
     ctx.strokeStyle = pointer_color
     ctx.lineWidth = pointer_color
@@ -81,3 +93,7 @@ class Pointer extends Point
       ctx.fillStyle = pointer_color
       ctx.arc(@track.head().x, @track.head().y, @radius || 5, 0, Math.PI * 2, false)
       ctx.fill()
+
+    ctx.beginPath()
+    ctx.arc(@track.head().x, @track.head().y, (@radius || 5) * 5, 0, Math.PI * 2, false)
+    ctx.stroke()

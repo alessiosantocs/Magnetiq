@@ -2,7 +2,11 @@ class Interaction
   constructor: (options={})->
     {@canvas} = options
 
-    @pointers = [new Pointer()]
+    @pointers = [new Pointer
+      defaultPoint: new Point
+        x: window.innerWidth
+        y: window.innerHeight
+    ]
 
     interaction = @
 

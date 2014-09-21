@@ -10,7 +10,7 @@ class MagnetiqEngine
       window.setTimeout(callback, 1000)
   )();
 
-  # Start drawing
+  # Make use of the requestAnimFrame to start drawing the canvas
   drawSceneIntoCanvas = (scene, canvas, ctx, final_ctx)->
     drawSceneIntoCanvasFn scene, canvas, ctx, final_ctx
     requestAnimFrame -> drawSceneIntoCanvas(scene, canvas, ctx, final_ctx)
