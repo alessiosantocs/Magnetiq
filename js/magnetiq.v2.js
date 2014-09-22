@@ -1,5 +1,5 @@
 (function() {
-  var Collision, CollisionsHandler, Corps, Galaxy, Interaction, MagnetiqEngine, Orbit, Point, Pointer, Scene, Star, Track, Universe,
+  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, MagnetiqEngine, OrbitalAnimation, Point, Pointer, Scene, Star, Track, Universe,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -16,6 +16,9 @@
 
     Point.prototype.set = function(property, value) {
       this.preDigest();
+      if (value instanceof Function) {
+        value = value(this);
+      }
       this[property] = value;
       this.postDigest();
       return this[property];
@@ -34,6 +37,66 @@
     return Point;
 
   })();
+
+  Animation = (function() {
+    function Animation() {}
+
+    Animation.prototype.renderAnimation = function() {};
+
+    Animation.prototype.startAnimation = function() {
+      var instance;
+      this.renderAnimation();
+      instance = this;
+      return setInterval(function() {
+        return instance.renderAnimation();
+      }, 10);
+    };
+
+    return Animation;
+
+  })();
+
+  OrbitalAnimation = (function(_super) {
+    var distanceFromCenter;
+
+    __extends(OrbitalAnimation, _super);
+
+    distanceFromCenter = function(center, distance) {
+      return center.marginRadius + distance;
+    };
+
+    function OrbitalAnimation(options) {
+      this.centerPoint = options.centerPoint, this.distance = options.distance, this.points = options.points;
+    }
+
+    OrbitalAnimation.prototype.corpsPositionFromTimestamp = function(timestamp, point) {
+      var distance, force, newPointPosition, positionInTime, velocity;
+      newPointPosition = new Point();
+      force = this.centerPoint.gravitationalForce * this.centerPoint.radius * point.radius / point.distanceFromParentPoint;
+      velocity = force * 2;
+      positionInTime = timestamp * 0.0002 * velocity;
+      distance = distanceFromCenter(this.centerPoint, point.distanceFromParentPoint);
+      newPointPosition.x = distance * Math.cos(positionInTime) + this.centerPoint.x;
+      newPointPosition.y = distance * Math.sin(positionInTime) + this.centerPoint.y;
+      return newPointPosition;
+    };
+
+    OrbitalAnimation.prototype.renderAnimation = function() {
+      var newpoint, point, _i, _len, _ref, _results;
+      _ref = this.points;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        point = _ref[_i];
+        newpoint = this.corpsPositionFromTimestamp(Date.now(), point);
+        point.x = newpoint.x;
+        _results.push(point.y = newpoint.y);
+      }
+      return _results;
+    };
+
+    return OrbitalAnimation;
+
+  })(Animation);
 
   Collision = (function() {
     function Collision(options) {
@@ -98,11 +161,6 @@
       corps.distanceFromParentPoint = options.distance;
       corps.x = corps.parentPoint.x + corps.distanceFromParentPoint;
       corps.y = corps.parentPoint.y + corps.distanceFromParentPoint;
-      corps.orbit = new Orbit({
-        centerPoint: corps.parentPoint,
-        distance: corps.distanceFromParentPoint,
-        point: corps
-      });
       return corps;
     };
 
@@ -117,17 +175,7 @@
     }
 
     Corps.prototype.drawIntoCanvas = function(ctx) {
-      this.moveInOrbit();
       return Corps.__super__.drawIntoCanvas.call(this, ctx);
-    };
-
-    Corps.prototype.moveInOrbit = function() {
-      var point;
-      if (this.orbit) {
-        point = this.orbit.corpsPositionFromTimestamp(Date.now());
-        this.set("x", point.x);
-        return this.set("y", point.y);
-      }
     };
 
     return Corps;
@@ -266,33 +314,6 @@
     };
 
     return MagnetiqEngine;
-
-  })();
-
-  Orbit = (function() {
-    var distanceFromCenter;
-
-    distanceFromCenter = function(center, distance) {
-      return center.marginRadius + distance;
-    };
-
-    function Orbit(options) {
-      this.centerPoint = options.centerPoint, this.distance = options.distance, this.point = options.point;
-    }
-
-    Orbit.prototype.corpsPositionFromTimestamp = function(timestamp) {
-      var distance, force, newPointPosition, positionInTime, velocity;
-      newPointPosition = new Point();
-      force = this.centerPoint.gravitationalForce * this.centerPoint.radius * this.point.radius / this.distance;
-      velocity = force * 2;
-      positionInTime = timestamp * 0.0002 * velocity;
-      distance = distanceFromCenter(this.centerPoint, this.distance);
-      newPointPosition.x = distance * Math.cos(positionInTime) + this.centerPoint.x;
-      newPointPosition.y = distance * Math.sin(positionInTime) + this.centerPoint.y;
-      return newPointPosition;
-    };
-
-    return Orbit;
 
   })();
 
@@ -504,17 +525,13 @@
   })(Point);
 
   window.onload = function() {
-    var collisionsHandler, corps, engine, galaxy, galaxy2, interaction, scene, star, star2, universe;
-    corps = new Corps({
-      x: 10,
-      y: 10
-    });
+    var collisionsHandler, engine, galaxy, galaxy2, interaction, orbitalAnimation, orbitalAnimation2, scene, star, star2, universe;
     star = new Star({
       marginRadius: 50
     });
     galaxy = new Galaxy({
       star: star,
-      corpses: [corps]
+      corpses: []
     });
     star2 = new Star({
       marginRadius: 50,
@@ -536,34 +553,35 @@
       universes: [universe],
       interaction: interaction
     });
-    window.galaxy = galaxy;
-    engine = new MagnetiqEngine({
-      canvas: document.getElementById("magnetiq"),
-      scene: scene
-    });
-    window.engine = engine;
-    engine.startEngine();
     galaxy.generateCorpses({
       quantity: 190,
       radius: 200
     });
     galaxy2.generateCorpses({
       quantity: 30,
-      radius: 50
-    });
-    collisionsHandler = new CollisionsHandler();
-    collisionsHandler.onCollisionAmongst(galaxy.corpses, [interaction.pointers[0].track.head()], function(collisions) {
-      var collision, _i, _len, _results;
-      console.log("The pointer has collided", collisions);
-      _results = [];
-      for (_i = 0, _len = collisions.length; _i < _len; _i++) {
-        collision = collisions[_i];
-        _results.push(collision.basePoint.fillColor = "#f00");
+      radius: 50,
+      corpsesRadius: function() {
+        return Math.floor(Math.random() * 5 + 1);
       }
-      return _results;
     });
-    return collisionsHandler.onCollisionAmongst(galaxy.corpses, galaxy2.corpses, function(collisions) {
-      return console.log("There has been a collision between corpses", collisions);
+    orbitalAnimation = new OrbitalAnimation({
+      centerPoint: galaxy.star,
+      points: galaxy.corpses
+    });
+    orbitalAnimation.startAnimation();
+    orbitalAnimation2 = new OrbitalAnimation({
+      centerPoint: galaxy2.star,
+      points: galaxy2.corpses
+    });
+    orbitalAnimation2.startAnimation();
+    engine = new MagnetiqEngine({
+      canvas: document.getElementById("magnetiq"),
+      scene: scene
+    });
+    engine.startEngine();
+    collisionsHandler = new CollisionsHandler();
+    return collisionsHandler.onCollisionAmongst(galaxy.corpses, [interaction.pointers[0].track.head()], function(collisions) {
+      return console.log("The pointer has collided", collisions);
     });
   };
 

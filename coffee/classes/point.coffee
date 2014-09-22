@@ -10,6 +10,8 @@ class Point
   # Set everything in the object and then call the digest()
   set: (property, value)->
     @preDigest()
+    if value instanceof Function
+      value = value @
     @[property] = value
     @postDigest()
 

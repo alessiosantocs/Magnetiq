@@ -8,12 +8,14 @@ module.exports = (grunt) ->
           'js/magnetiq.v2.js':
             [
               'coffee/classes/point.coffee'
+              'coffee/classes/animations/*.coffee'
               'coffee/classes/*.coffee'
               'coffee/*.coffee'
             ]
     watch:
       files: [
               'coffee/classes/point.coffee'
+              'coffee/classes/animations/*.coffee'
               'coffee/classes/*.coffee'
               'coffee/*.coffee'
             ]

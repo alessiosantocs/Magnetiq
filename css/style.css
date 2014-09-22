@@ -25,7 +25,7 @@ body{
 #magnetiq{
 	display:block;
 	z-index: 0;
-	cursor: none;
+	/*cursor: none;*/
 }
 #game-status{
 	bottom: 5px;

@@ -1,29 +1,26 @@
 window.onload = ->
-  corps = new Corps({x: 10, y: 10})
+
+  # Set a galaxy with one star
   star = new Star({marginRadius: 50})
-  galaxy = new Galaxy({star: star, corpses: [corps]})
+  galaxy = new Galaxy({star: star, corpses: []})
 
-
+  # Set a galaxy with a star
   star2 = new Star({marginRadius: 50, x: 800, y: 500})
   star2.gravitationalForce = 2
   galaxy2 = new Galaxy({star: star2, corpses: []})
 
-
+  # Wrap galaxies in a universe
   universe = new Universe({galaxies: [galaxy, galaxy2]})
 
-
+  # Bind the user's method of interaction and track it
   interaction = new Interaction
     canvas: document.getElementById("magnetiq")
 
 
+  # Initialize a scene
   scene = new Scene({universes: [universe], interaction: interaction})
 
-  window.galaxy = galaxy
-
-  engine = new MagnetiqEngine({canvas: document.getElementById("magnetiq"), scene: scene})
-  window.engine = engine
-  engine.startEngine()
-
+  # Set galaxies
   galaxy.generateCorpses
     quantity: 190
     radius: 200
@@ -31,14 +28,24 @@ window.onload = ->
   galaxy2.generateCorpses
     quantity: 30
     radius: 50
+    corpsesRadius: -> Math.floor(Math.random() * 5 + 1)
 
+  # Setting animations
+  orbitalAnimation = new OrbitalAnimation
+    centerPoint: galaxy.star
+    points: galaxy.corpses
+  orbitalAnimation.startAnimation()
+
+  orbitalAnimation2 = new OrbitalAnimation
+    centerPoint: galaxy2.star
+    points: galaxy2.corpses
+  orbitalAnimation2.startAnimation()
+
+  # Starting the graphic engine
+  engine = new MagnetiqEngine({canvas: document.getElementById("magnetiq"), scene: scene})
+  engine.startEngine()
+
+  # Setting what happens on collision
   collisionsHandler = new CollisionsHandler()
   collisionsHandler.onCollisionAmongst galaxy.corpses, [interaction.pointers[0].track.head()], (collisions)->
     console.log "The pointer has collided", collisions
-    for collision in collisions
-      collision.basePoint.fillColor = "#f00"
-
-  collisionsHandler.onCollisionAmongst galaxy.corpses, galaxy2.corpses, (collisions)->
-    console.log "There has been a collision between corpses", collisions
-    # for collision in collisions
-    #   collision.basePoint.fillColor = "#00f"

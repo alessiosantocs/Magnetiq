@@ -7,12 +7,13 @@ class Corps extends Point
     corps.x = corps.parentPoint.x + corps.distanceFromParentPoint
     corps.y = corps.parentPoint.y + corps.distanceFromParentPoint
 
-    corps.orbit = new Orbit
-      centerPoint: corps.parentPoint
-      distance: corps.distanceFromParentPoint
-      point: corps
+    # corps.orbit = new Orbit
+    #   centerPoint: corps.parentPoint
+    #   distance: corps.distanceFromParentPoint
+    #   point: corps
 
     corps
+  # Default stuff is x,y,radius. In addiction parentPoint, gravitationalForce
   constructor: (options={})->
     super options
 
@@ -23,11 +24,4 @@ class Corps extends Point
     @radius ||= 5
 
   drawIntoCanvas: (ctx)->
-    @moveInOrbit()
     super ctx
-
-  moveInOrbit: ()->
-    if @orbit
-      point = @orbit.corpsPositionFromTimestamp Date.now()
-      @set "x", point.x
-      @set "y", point.y
