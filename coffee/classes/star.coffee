@@ -4,11 +4,8 @@ class Star extends Corps
 
     @radius = 10
 
+    @gravitationalForce = 10
+
     {@marginRadius} = options
 
-  # Override this method to give custom appearance
-  drawIntoCanvas: (ctx)->
-    ctx.beginPath()
-    ctx.fillStyle = "#00f"
-    ctx.arc(@x, @y, @radius || 5, 0, Math.PI * 2, false)
-    ctx.fill()
+    @fillColor = "#57d0f3"

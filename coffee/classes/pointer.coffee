@@ -7,7 +7,7 @@ class Pointer extends Point
 
     # Default pickup radius
     @pickupRadius ||= 300
-    @fillColor = "#0f0"
+    @fillColor = "#aeff00"
     @radius = 5
 
     options.defaultPoint ||= new Point

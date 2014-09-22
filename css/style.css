@@ -4,7 +4,7 @@
 body{
 	background:#222;
 	margin: 0;
-	
+
 }
 #menu {
 	position: absolute;
@@ -25,6 +25,7 @@ body{
 #magnetiq{
 	display:block;
 	z-index: 0;
+	cursor: none;
 }
 #game-status{
 	bottom: 5px;

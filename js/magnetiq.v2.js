@@ -111,7 +111,8 @@
         options = {};
       }
       Corps.__super__.constructor.call(this, options);
-      this.radius = options.radius, this.parentPoint = options.parentPoint;
+      this.radius = options.radius, this.parentPoint = options.parentPoint, this.gravitationalForce = options.gravitationalForce;
+      this.gravitationalForce || (this.gravitationalForce = 5);
       this.radius || (this.radius = 5);
     }
 
@@ -282,7 +283,7 @@
     Orbit.prototype.corpsPositionFromTimestamp = function(timestamp) {
       var distance, force, newPointPosition, positionInTime, velocity;
       newPointPosition = new Point();
-      force = 10 * this.centerPoint.radius * this.point.radius / this.distance;
+      force = this.centerPoint.gravitationalForce * this.centerPoint.radius * this.point.radius / this.distance;
       velocity = force * 2;
       positionInTime = timestamp * 0.0002 * velocity;
       distance = distanceFromCenter(this.centerPoint, this.distance);
@@ -309,7 +310,7 @@
       Pointer.__super__.constructor.call(this, options);
       this.pickupRadius = options.pickupRadius;
       this.pickupRadius || (this.pickupRadius = 300);
-      this.fillColor = "#0f0";
+      this.fillColor = "#aeff00";
       this.radius = 5;
       options.defaultPoint || (options.defaultPoint = new Point({
         x: 0,
@@ -437,15 +438,10 @@
       }
       Star.__super__.constructor.call(this, options);
       this.radius = 10;
+      this.gravitationalForce = 10;
       this.marginRadius = options.marginRadius;
+      this.fillColor = "#57d0f3";
     }
-
-    Star.prototype.drawIntoCanvas = function(ctx) {
-      ctx.beginPath();
-      ctx.fillStyle = "#00f";
-      ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
-      return ctx.fill();
-    };
 
     return Star;
 
@@ -508,7 +504,7 @@
   })(Point);
 
   window.onload = function() {
-    var collisionsHandler, corps, engine, galaxy, scene, star, universe;
+    var collisionsHandler, corps, engine, galaxy, galaxy2, interaction, scene, star, star2, universe;
     corps = new Corps({
       x: 10,
       y: 10
@@ -520,10 +516,20 @@
       star: star,
       corpses: [corps]
     });
-    universe = new Universe({
-      galaxies: [galaxy]
+    star2 = new Star({
+      marginRadius: 50,
+      x: 800,
+      y: 500
     });
-    window.interaction = new Interaction({
+    star2.gravitationalForce = 2;
+    galaxy2 = new Galaxy({
+      star: star2,
+      corpses: []
+    });
+    universe = new Universe({
+      galaxies: [galaxy, galaxy2]
+    });
+    interaction = new Interaction({
       canvas: document.getElementById("magnetiq")
     });
     scene = new Scene({
@@ -541,6 +547,10 @@
       quantity: 190,
       radius: 200
     });
+    galaxy2.generateCorpses({
+      quantity: 30,
+      radius: 50
+    });
     collisionsHandler = new CollisionsHandler();
     collisionsHandler.onCollisionAmongst(galaxy.corpses, [interaction.pointers[0].track.head()], function(collisions) {
       var collision, _i, _len, _results;
@@ -552,15 +562,8 @@
       }
       return _results;
     });
-    return collisionsHandler.onCollisionAmongst(galaxy.corpses, galaxy.corpses, function(collisions) {
-      var collision, _i, _len, _results;
-      console.log("There has been a collision between corpses", collisions);
-      _results = [];
-      for (_i = 0, _len = collisions.length; _i < _len; _i++) {
-        collision = collisions[_i];
-        _results.push(collision.basePoint.fillColor = "#00f");
-      }
-      return _results;
+    return collisionsHandler.onCollisionAmongst(galaxy.corpses, galaxy2.corpses, function(collisions) {
+      return console.log("There has been a collision between corpses", collisions);
     });
   };
 

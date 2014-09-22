@@ -16,7 +16,9 @@ class Corps extends Point
   constructor: (options={})->
     super options
 
-    {@radius, @parentPoint} = options
+    {@radius, @parentPoint, @gravitationalForce} = options
+
+    @gravitationalForce ||= 5
 
     @radius ||= 5
 
