@@ -49,3 +49,4 @@ window.onload = ->
   collisionsHandler = new CollisionsHandler()
   collisionsHandler.onCollisionAmongst galaxy.corpses, [interaction.pointers[0].track.head()], (collisions)->
     console.log "The pointer has collided", collisions
+    
