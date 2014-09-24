@@ -30,12 +30,12 @@ class CollisionsHandler
 
   onCollisionAmongst: (pointsGroup1, pointsGroup2, handler)->
     instance = @
-    setInterval ->
+    interval = setInterval ->
       collisions = instance.detectCollisionsAmongst pointsGroup1, pointsGroup2
 
       if collisions.length > 0
         # Pass to the handler the collision array
         handler(collisions)
-    , 100
+    , 10
 
-    @
+    interval

@@ -1,8 +1,8 @@
 class Corps extends Point
   @initWithParentPoint = (options)->
-    corps = new Corps(options)
+    options.distanceFromParentPoint = options.distance
 
-    corps.distanceFromParentPoint = options.distance
+    corps = new Corps(options)
 
     corps.x = corps.parentPoint.x + corps.distanceFromParentPoint
     corps.y = corps.parentPoint.y + corps.distanceFromParentPoint
@@ -17,11 +17,14 @@ class Corps extends Point
   constructor: (options={})->
     super options
 
-    {@radius, @parentPoint, @gravitationalForce} = options
+    {@radius, @parentPoint, @gravitationalForce, @distanceFromParentPoint} = options
 
     @gravitationalForce ||= 5
 
-    @radius ||= 5
+    @radius ||= 3
+
+    if @radius instanceof Function
+      @radius = @radius(@)
 
   drawIntoCanvas: (ctx)->
     super ctx

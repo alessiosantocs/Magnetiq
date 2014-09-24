@@ -1,3 +1,4 @@
+# Please find a way to stop or cancel an animation!!!
 class Animation
   # Override to insert stuff inside
   constructor: ->

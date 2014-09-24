@@ -16,6 +16,7 @@ class Galaxy extends Point
       @corpses.push new Corps.initWithParentPoint
         parentPoint: @star
         distance: _i * spaceOffset + (@star.marginRadius || 0)
+        radius: options.corpsRadius
 
     @corpses
 

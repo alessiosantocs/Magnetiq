@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, MagnetiqEngine, OrbitalAnimation, Point, Pointer, Scene, Star, Track, Universe,
+  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, Level, Levels, MagnetiqEngine, OrbitalAnimation, Point, Pointer, Scene, Star, Track, Universe, level, levels,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -98,6 +98,84 @@
 
   })(Animation);
 
+  Levels = (function(_super) {
+    __extends(Levels, _super);
+
+    function Levels() {}
+
+    Levels.prototype.getLevel = function(name) {
+      var level, _i, _len;
+      for (_i = 0, _len = this.length; _i < _len; _i++) {
+        level = this[_i];
+        if (level.name === name) {
+          return level;
+        }
+      }
+      return console.error("Level " + name + " was not found!");
+    };
+
+    Levels.prototype.push = function(level) {
+      return Levels.__super__.push.call(this, level);
+    };
+
+    return Levels;
+
+  })(Array);
+
+  Level = (function() {
+    function Level(options) {
+      if (options == null) {
+        options = {};
+      }
+      this.name = options.name, this.fn = options.fn;
+    }
+
+    Level.prototype.call = function(scene) {
+      return this.fn(scene);
+    };
+
+    return Level;
+
+  })();
+
+  levels = new Levels();
+
+  level = new Level({
+    name: "level1",
+    fn: function(scene) {
+      var galaxy, interaction, orbitalAnimation, star, universe;
+      star = new Star({
+        marginRadius: 20,
+        x: 300,
+        y: 400
+      });
+      galaxy = new Galaxy({
+        star: star,
+        corpses: []
+      });
+      star.gravitationalForce = 5;
+      galaxy.generateCorpses({
+        quantity: 80,
+        radius: 30
+      });
+      universe = new Universe({
+        galaxies: [galaxy]
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq")
+      });
+      orbitalAnimation = new OrbitalAnimation({
+        centerPoint: galaxy.star,
+        points: galaxy.corpses
+      });
+      orbitalAnimation.startAnimation();
+      scene.universes = [universe];
+      return scene.interaction = interaction;
+    }
+  });
+
+  levels.push(level);
+
   Collision = (function() {
     function Collision(options) {
       this.basePoint = options.basePoint, this.controlPoint = options.controlPoint;
@@ -136,16 +214,16 @@
     };
 
     CollisionsHandler.prototype.onCollisionAmongst = function(pointsGroup1, pointsGroup2, handler) {
-      var instance;
+      var instance, interval;
       instance = this;
-      setInterval(function() {
+      interval = setInterval(function() {
         var collisions;
         collisions = instance.detectCollisionsAmongst(pointsGroup1, pointsGroup2);
         if (collisions.length > 0) {
           return handler(collisions);
         }
-      }, 100);
-      return this;
+      }, 10);
+      return interval;
     };
 
     return CollisionsHandler;
@@ -157,8 +235,8 @@
 
     Corps.initWithParentPoint = function(options) {
       var corps;
+      options.distanceFromParentPoint = options.distance;
       corps = new Corps(options);
-      corps.distanceFromParentPoint = options.distance;
       corps.x = corps.parentPoint.x + corps.distanceFromParentPoint;
       corps.y = corps.parentPoint.y + corps.distanceFromParentPoint;
       return corps;
@@ -169,9 +247,12 @@
         options = {};
       }
       Corps.__super__.constructor.call(this, options);
-      this.radius = options.radius, this.parentPoint = options.parentPoint, this.gravitationalForce = options.gravitationalForce;
+      this.radius = options.radius, this.parentPoint = options.parentPoint, this.gravitationalForce = options.gravitationalForce, this.distanceFromParentPoint = options.distanceFromParentPoint;
       this.gravitationalForce || (this.gravitationalForce = 5);
-      this.radius || (this.radius = 5);
+      this.radius || (this.radius = 3);
+      if (this.radius instanceof Function) {
+        this.radius = this.radius(this);
+      }
     }
 
     Corps.prototype.drawIntoCanvas = function(ctx) {
@@ -210,7 +291,8 @@
         corps = corpses[_i];
         this.corpses.push(new Corps.initWithParentPoint({
           parentPoint: this.star,
-          distance: _i * spaceOffset + (this.star.marginRadius || 0)
+          distance: _i * spaceOffset + (this.star.marginRadius || 0),
+          radius: options.corpsRadius
         }));
       }
       return this.corpses;
@@ -432,11 +514,17 @@
       this.universes = options.universes, this.interaction = options.interaction;
     }
 
-    Scene.prototype.toPointArray = function() {
+    Scene.prototype.toPointArray = function(options) {
       var array, universe, _i, _len, _ref;
+      if (options == null) {
+        options = {};
+      }
       array = [];
-      if (this.interaction) {
-        array = array.concat(this.interaction.toPointArray());
+      options.skipInteraction || (options.skipInteraction = false);
+      if (!options.skipInteraction) {
+        if (this.interaction) {
+          array = array.concat(this.interaction.toPointArray());
+        }
       }
       _ref = this.universes;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -444,6 +532,16 @@
         array = array.concat(universe.toPointArray());
       }
       return array;
+    };
+
+    Scene.prototype.clearScene = function() {
+      this.universes = [];
+      return this.interaction = null;
+    };
+
+    Scene.prototype.setLevel = function(level) {
+      this.clearScene();
+      return level.call(this);
     };
 
     return Scene;
@@ -525,64 +623,22 @@
   })(Point);
 
   window.onload = function() {
-    var collisionsHandler, engine, galaxy, galaxy2, interaction, orbitalAnimation, orbitalAnimation2, scene, star, star2, universe;
-    star = new Star({
-      marginRadius: 50
+    var ccc, collisionsHandler, engine, scene;
+    scene = new Scene();
+    scene.setLevel(levels.getLevel("level1"));
+    window.scene = scene;
+    collisionsHandler = new CollisionsHandler();
+    ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+      skipInteraction: true
+    }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+      scene.setLevel(levels.getLevel("level1"));
+      return clearInterval(ccc);
     });
-    galaxy = new Galaxy({
-      star: star,
-      corpses: []
-    });
-    star2 = new Star({
-      marginRadius: 50,
-      x: 800,
-      y: 500
-    });
-    star2.gravitationalForce = 2;
-    galaxy2 = new Galaxy({
-      star: star2,
-      corpses: []
-    });
-    universe = new Universe({
-      galaxies: [galaxy, galaxy2]
-    });
-    interaction = new Interaction({
-      canvas: document.getElementById("magnetiq")
-    });
-    scene = new Scene({
-      universes: [universe],
-      interaction: interaction
-    });
-    galaxy.generateCorpses({
-      quantity: 190,
-      radius: 200
-    });
-    galaxy2.generateCorpses({
-      quantity: 30,
-      radius: 50,
-      corpsesRadius: function() {
-        return Math.floor(Math.random() * 5 + 1);
-      }
-    });
-    orbitalAnimation = new OrbitalAnimation({
-      centerPoint: galaxy.star,
-      points: galaxy.corpses
-    });
-    orbitalAnimation.startAnimation();
-    orbitalAnimation2 = new OrbitalAnimation({
-      centerPoint: galaxy2.star,
-      points: galaxy2.corpses
-    });
-    orbitalAnimation2.startAnimation();
     engine = new MagnetiqEngine({
       canvas: document.getElementById("magnetiq"),
       scene: scene
     });
-    engine.startEngine();
-    collisionsHandler = new CollisionsHandler();
-    return collisionsHandler.onCollisionAmongst(galaxy.corpses, [interaction.pointers[0].track.head()], function(collisions) {
-      return console.log("The pointer has collided", collisions);
-    });
+    return engine.startEngine();
   };
 
 }).call(this);

@@ -9,6 +9,8 @@ module.exports = (grunt) ->
             [
               'coffee/classes/point.coffee'
               'coffee/classes/animations/*.coffee'
+              'coffee/levels/levels.coffee' # First of all
+              'coffee/levels/level-*.coffee' # Then load all levels
               'coffee/classes/*.coffee'
               'coffee/*.coffee'
             ]
@@ -16,6 +18,8 @@ module.exports = (grunt) ->
       files: [
               'coffee/classes/point.coffee'
               'coffee/classes/animations/*.coffee'
+              'coffee/levels/levels.coffee' # First of all
+              'coffee/levels/level-*.coffee' # Then load all levels
               'coffee/classes/*.coffee'
               'coffee/*.coffee'
             ]
