@@ -1,6 +1,7 @@
-# File of level 1
-level = new Level
-  name: "level1"
+# File of level 2
+# Push a new level into the array of levels
+levels.push new Level
+  name: "level2"
   fn: (scene)->
     # Set a galaxy with one star
     star = new Star
@@ -13,7 +14,7 @@ level = new Level
     star.gravitationalForce = 5
     # Set galaxies
     galaxy.generateCorpses
-      quantity: 10
+      quantity: 40
       radius: 10
     # Wrap galaxies in a universe
     universe = new Universe({galaxies: [galaxy]})
@@ -32,6 +33,3 @@ level = new Level
     scene.universes = [universe]
     scene.interaction = interaction
     # scene.animations.push orbitalAnimation
-
-# Push a new level into the array of levels
-levels.push level

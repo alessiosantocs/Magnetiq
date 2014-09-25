@@ -94,6 +94,6 @@ class Pointer extends Point
       ctx.arc(@track.head().x, @track.head().y, @radius || 5, 0, Math.PI * 2, false)
       ctx.fill()
 
-    ctx.beginPath()
-    ctx.arc(@track.head().x, @track.head().y, (@radius || 5) * 5, 0, Math.PI * 2, false)
-    ctx.stroke()
+    # ctx.beginPath()
+    # ctx.arc(@track.head().x, @track.head().y, (@radius || 5) * 5, 0, Math.PI * 2, false)
+    # ctx.stroke()

@@ -155,8 +155,8 @@
       });
       star.gravitationalForce = 5;
       galaxy.generateCorpses({
-        quantity: 80,
-        radius: 30
+        quantity: 10,
+        radius: 10
       });
       universe = new Universe({
         galaxies: [galaxy]
@@ -175,6 +175,40 @@
   });
 
   levels.push(level);
+
+  levels.push(new Level({
+    name: "level2",
+    fn: function(scene) {
+      var galaxy, interaction, orbitalAnimation, star, universe;
+      star = new Star({
+        marginRadius: 20,
+        x: 300,
+        y: 400
+      });
+      galaxy = new Galaxy({
+        star: star,
+        corpses: []
+      });
+      star.gravitationalForce = 5;
+      galaxy.generateCorpses({
+        quantity: 40,
+        radius: 10
+      });
+      universe = new Universe({
+        galaxies: [galaxy]
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq")
+      });
+      orbitalAnimation = new OrbitalAnimation({
+        centerPoint: galaxy.star,
+        points: galaxy.corpses
+      });
+      orbitalAnimation.startAnimation();
+      scene.universes = [universe];
+      return scene.interaction = interaction;
+    }
+  }));
 
   Collision = (function() {
     function Collision(options) {
@@ -495,11 +529,8 @@
         ctx.beginPath();
         ctx.fillStyle = pointer_color;
         ctx.arc(this.track.head().x, this.track.head().y, this.radius || 5, 0, Math.PI * 2, false);
-        ctx.fill();
+        return ctx.fill();
       }
-      ctx.beginPath();
-      ctx.arc(this.track.head().x, this.track.head().y, (this.radius || 5) * 5, 0, Math.PI * 2, false);
-      return ctx.stroke();
     };
 
     return Pointer;
@@ -631,7 +662,7 @@
     ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
       skipInteraction: true
     }), [scene.interaction.pointers[0].track.head()], function(collisions) {
-      scene.setLevel(levels.getLevel("level1"));
+      scene.setLevel(levels.getLevel("level2"));
       return clearInterval(ccc);
     });
     engine = new MagnetiqEngine({

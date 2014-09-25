@@ -9,7 +9,7 @@ window.onload = ->
   # Setting what happens on collision
   collisionsHandler = new CollisionsHandler()
   ccc = collisionsHandler.onCollisionAmongst scene.toPointArray({skipInteraction: true}), [scene.interaction.pointers[0].track.head()], (collisions)->
-    scene.setLevel levels.getLevel("level1")
+    scene.setLevel levels.getLevel("level2")
     clearInterval(ccc)
 
 
