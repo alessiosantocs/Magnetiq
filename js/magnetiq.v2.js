@@ -437,6 +437,12 @@
         touch = event.touches[0];
         return interaction.pointers[0].recordMovement(touch.pageX - 30, touch.pageY - 30);
       });
+      this.canvas.addEventListener("touchstart", function(event) {
+        return event.preventDefault();
+      });
+      this.canvas.addEventListener("touchend", function(event) {
+        return event.preventDefault();
+      });
     }
 
     Interaction.prototype.toPointArray = function() {

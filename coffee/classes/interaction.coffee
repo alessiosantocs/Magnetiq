@@ -25,6 +25,10 @@ class Interaction
       touch = event.touches[0]
       interaction.pointers[0].recordMovement touch.pageX - 30, touch.pageY - 30
 
+    @canvas.addEventListener "touchstart", (event)->
+      event.preventDefault()
+    @canvas.addEventListener "touchend", (event)->
+      event.preventDefault()
 
 
   toPointArray: ->
