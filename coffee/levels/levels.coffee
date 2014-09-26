@@ -14,14 +14,19 @@ class Levels extends Array
 # Class to instantiate new levels
 class Level
   constructor: (options={})->
-    {@name, @fn} = options
+    {@name, @fn, @nextLevelName} = options
 
   call: (scene, options={})->
     {@onLevelEnding} = options
+    @scene = scene
     @fn scene, @
 
   # A basic method you should call when the level ends
   end: (levelResult)->
+    if levelResult
+      @scene.setLevel levels.getLevel(@nextLevelName) if @scene and @nextLevelName
+    else
+      @scene.setLevel @
     @onLevelEnding(levelResult) # Invoke the callback because the level has ended
 
 # Global object for levels

@@ -23,7 +23,7 @@ class Interaction
     @canvas.addEventListener "touchmove", (event)->
       event.preventDefault()
       touch = event.touches[0]
-      interaction.pointers[0].recordMovement touch.pageX - 30, touch.pageY - 30
+      interaction.pointers[0].recordMovement touch.pageX - 40, touch.pageY - 40
 
     @canvas.addEventListener "touchstart", (event)->
       event.preventDefault()

@@ -2,6 +2,9 @@ class Scene
   constructor: (options={})->
     {@universes, @interaction} = options
 
+    @interface = new Interface
+      container: document.getElementById("interface")
+
   toPointArray: (options={})->
     array = []
 
@@ -19,5 +22,6 @@ class Scene
 
   setLevel: (level, onLevelEnding=->)->
     console.log onLevelEnding
+    @interface.displayMessage(level.name, {autoDismissAfter: 3000})
     @clearScene()
     level.call @, {onLevelEnding: onLevelEnding}

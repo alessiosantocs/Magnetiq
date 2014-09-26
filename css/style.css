@@ -16,6 +16,50 @@ body{
 	right: 0;
 	z-index: 1000;
 }
+
+#interface{
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: none;
+	opacity: 0;
+
+	-webkit-transition: opacity .6s ease;
+}
+
+#interface.display{
+	opacity: 1;
+}
+
+#interface .standard-message{
+	margin-top: 22%;
+	font-family: "Raleway Dots", sans-serif;
+	color: white;
+	font-size: 40px;
+	text-align: center;
+	opacity: 0;
+	z-index: 2;
+	position: relative;
+}
+
+#interface .overlay{
+	background: #222;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	opacity: 0;
+
+	-webkit-transition: opacity .4s ease;
+}
+
+#interface .overlay.display{
+	opacity: 1;
+}
+
 #start-game {
 	font-size: 90px;
 	font-family: "Raleway Dots", sans-serif;
