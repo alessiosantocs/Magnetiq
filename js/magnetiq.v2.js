@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, Level, Levels, MagnetiqEngine, OrbitalAnimation, Point, Pointer, Scene, Star, Track, Universe, level, levels,
+  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, Level, Levels, MagnetiqEngine, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -98,6 +98,38 @@
 
   })(Animation);
 
+  PulseOrbitAnimation = (function(_super) {
+    var distanceFromCenter;
+
+    __extends(PulseOrbitAnimation, _super);
+
+    distanceFromCenter = function(center, distance) {
+      return center.marginRadius + distance;
+    };
+
+    function PulseOrbitAnimation(options) {
+      this.ring = options.ring, this.minRadius = options.minRadius, this.maxRadius = options.maxRadius;
+      this.timestamp = 0;
+    }
+
+    PulseOrbitAnimation.prototype.radiusValueFromTimestamp = function(timestamp) {
+      var radius;
+      radius = Math.abs(Math.sin(timestamp / 15) * this.maxRadius) + this.minRadius;
+      return radius;
+    };
+
+    PulseOrbitAnimation.prototype.renderAnimation = function() {
+      var radius;
+      this.timestamp += 1;
+      console.log(this.timestamp);
+      radius = this.radiusValueFromTimestamp(this.timestamp);
+      return this.ring.radius = radius;
+    };
+
+    return PulseOrbitAnimation;
+
+  })(Animation);
+
   Levels = (function(_super) {
     __extends(Levels, _super);
 
@@ -130,8 +162,16 @@
       this.name = options.name, this.fn = options.fn;
     }
 
-    Level.prototype.call = function(scene) {
-      return this.fn(scene);
+    Level.prototype.call = function(scene, options) {
+      if (options == null) {
+        options = {};
+      }
+      this.onLevelEnding = options.onLevelEnding;
+      return this.fn(scene, this);
+    };
+
+    Level.prototype.end = function(levelResult) {
+      return this.onLevelEnding(levelResult);
     };
 
     return Level;
@@ -140,14 +180,14 @@
 
   levels = new Levels();
 
-  level = new Level({
+  levels.push(new Level({
     name: "level1",
-    fn: function(scene) {
-      var galaxy, interaction, orbitalAnimation, star, universe;
+    fn: function(scene, level) {
+      var ccc, collisionsHandler, galaxy, interaction, orbitalAnimation, star, universe;
       star = new Star({
         marginRadius: 20,
-        x: 300,
-        y: 400
+        x: 200,
+        y: 150
       });
       galaxy = new Galaxy({
         star: star,
@@ -162,7 +202,11 @@
         galaxies: [galaxy]
       });
       interaction = new Interaction({
-        canvas: document.getElementById("magnetiq")
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: 500,
+          y: 150
+        })
       });
       orbitalAnimation = new OrbitalAnimation({
         centerPoint: galaxy.star,
@@ -170,11 +214,29 @@
       });
       orbitalAnimation.startAnimation();
       scene.universes = [universe];
-      return scene.interaction = interaction;
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
     }
-  });
-
-  levels.push(level);
+  }));
 
   levels.push(new Level({
     name: "level2",
@@ -355,18 +417,25 @@
         options = {};
       }
       this.canvas = options.canvas;
+      options.defaultPoint || (options.defaultPoint = new Point({
+        x: window.innerWidth,
+        y: window.innerHeight
+      }));
       this.pointers = [
         new Pointer({
-          defaultPoint: new Point({
-            x: window.innerWidth,
-            y: window.innerHeight
-          })
+          defaultPoint: options.defaultPoint
         })
       ];
       interaction = this;
       this.canvas.addEventListener("mousemove", function(event) {
         event.preventDefault();
         return interaction.pointers[0].recordMovement(event.pageX, event.pageY);
+      });
+      this.canvas.addEventListener("touchmove", function(event) {
+        var touch;
+        event.preventDefault();
+        touch = event.touches[0];
+        return interaction.pointers[0].recordMovement(touch.pageX - 30, touch.pageY - 30);
       });
     }
 
@@ -433,6 +502,30 @@
 
   })();
 
+  Orbit = (function(_super) {
+    __extends(Orbit, _super);
+
+    function Orbit(options) {
+      if (options == null) {
+        options = {};
+      }
+      Orbit.__super__.constructor.call(this, options);
+      this.borderColor = options.borderColor;
+      this.fillColor = null;
+      this.borderColor || (this.borderColor = "#aeff00");
+    }
+
+    Orbit.prototype.drawIntoCanvas = function(ctx) {
+      ctx.beginPath();
+      ctx.strokeStyle = this.borderColor;
+      ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
+      return ctx.stroke();
+    };
+
+    return Orbit;
+
+  })(Corps);
+
   Pointer = (function(_super) {
     var trackLengthLimit;
 
@@ -446,7 +539,7 @@
       }
       Pointer.__super__.constructor.call(this, options);
       this.pickupRadius = options.pickupRadius;
-      this.pickupRadius || (this.pickupRadius = 300);
+      this.pickupRadius || (this.pickupRadius = 150);
       this.fillColor = "#aeff00";
       this.radius = 5;
       options.defaultPoint || (options.defaultPoint = new Point({
@@ -570,9 +663,15 @@
       return this.interaction = null;
     };
 
-    Scene.prototype.setLevel = function(level) {
+    Scene.prototype.setLevel = function(level, onLevelEnding) {
+      if (onLevelEnding == null) {
+        onLevelEnding = function() {};
+      }
+      console.log(onLevelEnding);
       this.clearScene();
-      return level.call(this);
+      return level.call(this, {
+        onLevelEnding: onLevelEnding
+      });
     };
 
     return Scene;
@@ -654,17 +753,16 @@
   })(Point);
 
   window.onload = function() {
-    var ccc, collisionsHandler, engine, scene;
+    var engine, scene;
     scene = new Scene();
-    scene.setLevel(levels.getLevel("level1"));
-    window.scene = scene;
-    collisionsHandler = new CollisionsHandler();
-    ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
-      skipInteraction: true
-    }), [scene.interaction.pointers[0].track.head()], function(collisions) {
-      scene.setLevel(levels.getLevel("level2"));
-      return clearInterval(ccc);
+    scene.setLevel(levels.getLevel("level1"), function(success) {
+      if (success) {
+        return scene.setLevel(levels.getLevel("level2"));
+      } else {
+        return scene.setLevel(levels.getLevel("level1"));
+      }
     });
+    window.scene = scene;
     engine = new MagnetiqEngine({
       canvas: document.getElementById("magnetiq"),
       scene: scene

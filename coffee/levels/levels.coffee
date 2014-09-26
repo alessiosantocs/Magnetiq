@@ -16,8 +16,13 @@ class Level
   constructor: (options={})->
     {@name, @fn} = options
 
-  call: (scene)->
-    @fn scene
+  call: (scene, options={})->
+    {@onLevelEnding} = options
+    @fn scene, @
+
+  # A basic method you should call when the level ends
+  end: (levelResult)->
+    @onLevelEnding(levelResult) # Invoke the callback because the level has ended
 
 # Global object for levels
 levels = new Levels()

@@ -6,13 +6,26 @@ class Pointer extends Point
     {@pickupRadius} = options
 
     # Default pickup radius
-    @pickupRadius ||= 300
+    @pickupRadius ||= 150
     @fillColor = "#aeff00"
     @radius = 5
 
     options.defaultPoint ||= new Point
       x: 0
       y: 0
+
+    # Trying pickup animation
+    # @pickupPoint = new Orbit
+    #   x: options.defaultPoint.x
+    #   y: options.defaultPoint.y
+    #   radius: 50
+    #
+    # pickupAnimation = new PulseOrbitAnimation
+    #   ring: @pickupPoint
+    #   minRadius: 10
+    #   maxRadius: 50
+
+    # pickupAnimation.startAnimation()
 
     @x = options.defaultPoint.x
     @y = options.defaultPoint.y
@@ -36,7 +49,7 @@ class Pointer extends Point
     track_head = @track.head()
     dX = Math.abs(@x - track_head.x)
     dY = Math.abs(@y - track_head.y)
-
+    
     x = 0
     y = 0
 
@@ -94,6 +107,5 @@ class Pointer extends Point
       ctx.arc(@track.head().x, @track.head().y, @radius || 5, 0, Math.PI * 2, false)
       ctx.fill()
 
-    # ctx.beginPath()
-    # ctx.arc(@track.head().x, @track.head().y, (@radius || 5) * 5, 0, Math.PI * 2, false)
-    # ctx.stroke()
+
+    # @pickupPoint.drawIntoCanvas(ctx)

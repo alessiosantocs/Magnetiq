@@ -17,6 +17,7 @@ class Scene
     @universes = []
     @interaction = null
 
-  setLevel: (level)->
+  setLevel: (level, onLevelEnding=->)->
+    console.log onLevelEnding
     @clearScene()
-    level.call @
+    level.call @, {onLevelEnding: onLevelEnding}
