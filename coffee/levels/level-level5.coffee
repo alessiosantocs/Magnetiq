@@ -1,10 +1,10 @@
-# File of level 3
+# File of level 5
 # Push a new level into the array of levels
 levels.push new Level
-  id: "level3"
-  nextLevelId: "level4"
-  name: "three"
-  tip: "faster"
+  id: "level5"
+  nextLevelId: "level5"
+  name: "five"
+  tip: "boss"
   fn: (scene, level)->
 
     universe = new Universe()
@@ -12,13 +12,13 @@ levels.push new Level
     # Function defined in levels.coffee
     level.createGalaxyIntoUniverse universe,
       star:
-        x: 200
+        x: -150
         y: 150
         marginRadius: 20
-        gravitationalForce: 10
+        gravitationalForce: 8
       corpses:
-        quantity: 40
-      radius: 20
+        quantity: 150
+      radius: 100
 
 
     # Bind the user's method of interaction and track it
@@ -27,11 +27,11 @@ levels.push new Level
       defaultPoint: new Point
         x: 500
         y: 150
-      # onDeviceMotion: (a, b, g, event)->
-      #   array = scene.toPointArray({only: Star})
-      #   for star in array
-      #     star.x += b/3
-      #     star.y += a/3
+      onDeviceMotion: (a, b, g, event)->
+        array = scene.toPointArray({only: Star})
+        for star in array
+          star.x += b/3
+          # star.y += a/3
 
 
     # Set some values in the scene
@@ -51,5 +51,5 @@ levels.push new Level
           level.end(true)
         else if collision.basePoint instanceof Corps
           clearInterval ccc
-          level.tip = "ouch"
+          level.tip = "!#/:O"
           level.end(false)

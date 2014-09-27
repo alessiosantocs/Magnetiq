@@ -360,7 +360,7 @@
 
   levels.push(new Level({
     id: "level3",
-    nextLevelId: "level3",
+    nextLevelId: "level4",
     name: "three",
     tip: "faster",
     fn: function(scene, level) {
@@ -402,6 +402,138 @@
           } else if (collision.basePoint instanceof Corps) {
             clearInterval(ccc);
             level.tip = "ouch";
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
+    }
+  }));
+
+  levels.push(new Level({
+    id: "level4",
+    nextLevelId: "level5",
+    name: "four",
+    tip: "tilt the universe",
+    fn: function(scene, level) {
+      var ccc, collisionsHandler, interaction, universe;
+      universe = new Universe();
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: -50,
+          y: 150,
+          marginRadius: 20,
+          gravitationalForce: 10
+        },
+        corpses: {
+          quantity: 40
+        },
+        radius: 20
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: 500,
+          y: 150
+        }),
+        onDeviceMotion: function(a, b, g, event) {
+          var array, star, _i, _len, _results;
+          array = scene.toPointArray({
+            only: Star
+          });
+          _results = [];
+          for (_i = 0, _len = array.length; _i < _len; _i++) {
+            star = array[_i];
+            _results.push(star.x += b / 3);
+          }
+          return _results;
+        }
+      });
+      scene.universes = [universe];
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        console.log(collisions);
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            level.tip = "!#/:O";
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
+    }
+  }));
+
+  levels.push(new Level({
+    id: "level5",
+    nextLevelId: "level5",
+    name: "five",
+    tip: "boss",
+    fn: function(scene, level) {
+      var ccc, collisionsHandler, interaction, universe;
+      universe = new Universe();
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: -150,
+          y: 150,
+          marginRadius: 20,
+          gravitationalForce: 8
+        },
+        corpses: {
+          quantity: 150
+        },
+        radius: 100
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: 500,
+          y: 150
+        }),
+        onDeviceMotion: function(a, b, g, event) {
+          var array, star, _i, _len, _results;
+          array = scene.toPointArray({
+            only: Star
+          });
+          _results = [];
+          for (_i = 0, _len = array.length; _i < _len; _i++) {
+            star = array[_i];
+            _results.push(star.x += b / 3);
+          }
+          return _results;
+        }
+      });
+      scene.universes = [universe];
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        console.log(collisions);
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            level.tip = "!#/:O";
             _results.push(level.end(false));
           } else {
             _results.push(void 0);
