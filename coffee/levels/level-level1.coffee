@@ -2,6 +2,7 @@
 # Push a new level into the array of levels
 levels.push new Level
   name: "level1"
+  nextLevelName: "level2"
   fn: (scene, level)->
     # Set a galaxy with one star
     star = new Star

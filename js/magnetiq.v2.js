@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, Level, Levels, MagnetiqEngine, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
+  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -159,7 +159,7 @@
       if (options == null) {
         options = {};
       }
-      this.name = options.name, this.fn = options.fn;
+      this.name = options.name, this.fn = options.fn, this.nextLevelName = options.nextLevelName;
     }
 
     Level.prototype.call = function(scene, options) {
@@ -167,10 +167,18 @@
         options = {};
       }
       this.onLevelEnding = options.onLevelEnding;
+      this.scene = scene;
       return this.fn(scene, this);
     };
 
     Level.prototype.end = function(levelResult) {
+      if (levelResult) {
+        if (this.scene && this.nextLevelName) {
+          this.scene.setLevel(levels.getLevel(this.nextLevelName));
+        }
+      } else {
+        this.scene.setLevel(this);
+      }
       return this.onLevelEnding(levelResult);
     };
 
@@ -182,6 +190,7 @@
 
   levels.push(new Level({
     name: "level1",
+    nextLevelName: "level2",
     fn: function(scene, level) {
       var ccc, collisionsHandler, galaxy, interaction, orbitalAnimation, star, universe;
       star = new Star({
@@ -240,12 +249,13 @@
 
   levels.push(new Level({
     name: "level2",
-    fn: function(scene) {
-      var galaxy, interaction, orbitalAnimation, star, universe;
+    nextLevelName: "level2",
+    fn: function(scene, level) {
+      var ccc, collisionsHandler, galaxy, interaction, orbitalAnimation, star, universe;
       star = new Star({
         marginRadius: 20,
-        x: 300,
-        y: 400
+        x: 150,
+        y: 150
       });
       galaxy = new Galaxy({
         star: star,
@@ -260,7 +270,11 @@
         galaxies: [galaxy]
       });
       interaction = new Interaction({
-        canvas: document.getElementById("magnetiq")
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: 500,
+          y: 150
+        })
       });
       orbitalAnimation = new OrbitalAnimation({
         centerPoint: galaxy.star,
@@ -268,7 +282,28 @@
       });
       orbitalAnimation.startAnimation();
       scene.universes = [universe];
-      return scene.interaction = interaction;
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        console.log(collisions);
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
     }
   }));
 
@@ -435,7 +470,7 @@
         var touch;
         event.preventDefault();
         touch = event.touches[0];
-        return interaction.pointers[0].recordMovement(touch.pageX - 30, touch.pageY - 30);
+        return interaction.pointers[0].recordMovement(touch.pageX - 40, touch.pageY - 40);
       });
       this.canvas.addEventListener("touchstart", function(event) {
         return event.preventDefault();
@@ -443,6 +478,19 @@
       this.canvas.addEventListener("touchend", function(event) {
         return event.preventDefault();
       });
+      window.ondevicemotion = function(event) {
+        var accelerationX, accelerationY, accelerationZ;
+        accelerationX = event.accelerationIncludingGravity.x;
+        accelerationY = event.accelerationIncludingGravity.y;
+        accelerationZ = event.accelerationIncludingGravity.z;
+        if (Math.abs(accelerationY) < 0.3) {
+          accelerationY = 0;
+        }
+        if (Math.abs(accelerationX) < 0.3) {
+          accelerationX = 0;
+        }
+        return interaction.pointers[0].recordMovement(interaction.pointers[0].x + accelerationY * 2, interaction.pointers[0].y + accelerationX * 2);
+      };
     }
 
     Interaction.prototype.toPointArray = function() {
@@ -452,6 +500,64 @@
     return Interaction;
 
   })();
+
+  Interface = (function() {
+    function Interface(options) {
+      if (options == null) {
+        options = {};
+      }
+      this.container = options.container;
+      this.domStandardMessage = this.container.getElementsByClassName("standard-message")[0];
+      this.domOverlay = this.container.getElementsByClassName("overlay")[0];
+    }
+
+    Interface.prototype.showInterface = function() {
+      var instance;
+      instance = this;
+      this.container.style.display = "block";
+      setTimeout(function() {
+        return instance.container.className = "display";
+      }, 100);
+      return true;
+    };
+
+    Interface.prototype.hideInterface = function() {
+      var instance;
+      instance = this;
+      this.container.className = "";
+      this.domOverlay.className = "overlay";
+      setTimeout(function() {
+        return instance.container.style.display = "none";
+      }, 1000);
+      return true;
+    };
+
+    Interface.prototype.displayMessage = function(message, options) {
+      var instance, mainMessage;
+      if (options == null) {
+        options = {};
+      }
+      mainMessage = this.domStandardMessage.getElementsByClassName("message-main")[0];
+      mainMessage.innerText = message;
+      instance = this;
+      this.domStandardMessage.style.opacity = 1;
+      this.showInterface();
+      if (options.showOverlay) {
+        this.domOverlay.className = "overlay display";
+      }
+      if (options.autoDismissAfter) {
+        setTimeout(function() {
+          return instance.hideInterface();
+        }, options.autoDismissAfter);
+      }
+      return true;
+    };
+
+    return Interface;
+
+  })();
+
+  window.Interface = Interface;
 
   MagnetiqEngine = (function() {
     var drawIntoFinalCanvas, drawSceneIntoCanvas, drawSceneIntoCanvasFn, requestAnimFrame;
@@ -642,6 +748,9 @@
         options = {};
       }
       this.universes = options.universes, this.interaction = options.interaction;
+      this["interface"] = new Interface({
+        container: document.getElementById("interface")
+      });
     }
 
     Scene.prototype.toPointArray = function(options) {
@@ -674,6 +783,9 @@
         onLevelEnding = function() {};
       }
       console.log(onLevelEnding);
+      this["interface"].displayMessage(level.name, {
+        autoDismissAfter: 3000
+      });
       this.clearScene();
       return level.call(this, {
         onLevelEnding: onLevelEnding
@@ -761,13 +873,7 @@
   window.onload = function() {
     var engine, scene;
     scene = new Scene();
-    scene.setLevel(levels.getLevel("level1"), function(success) {
-      if (success) {
-        return scene.setLevel(levels.getLevel("level2"));
-      } else {
-        return scene.setLevel(levels.getLevel("level1"));
-      }
-    });
+    scene.setLevel(levels.getLevel("level1"));
     window.scene = scene;
     engine = new MagnetiqEngine({
       canvas: document.getElementById("magnetiq"),
