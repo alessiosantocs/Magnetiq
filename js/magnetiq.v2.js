@@ -178,15 +178,15 @@
 
     function Levels() {}
 
-    Levels.prototype.getLevel = function(name) {
+    Levels.prototype.getLevel = function(id) {
       var level, _i, _len;
       for (_i = 0, _len = this.length; _i < _len; _i++) {
         level = this[_i];
-        if (level.name === name) {
+        if (level.id === id) {
           return level;
         }
       }
-      return console.error("Level " + name + " was not found!");
+      return console.error("Level " + id + " was not found!");
     };
 
     Levels.prototype.push = function(level) {
@@ -202,8 +202,30 @@
       if (options == null) {
         options = {};
       }
-      this.name = options.name, this.fn = options.fn, this.nextLevelName = options.nextLevelName, this.tip = options.tip;
+      this.id = options.id, this.name = options.name, this.fn = options.fn, this.nextLevelId = options.nextLevelId, this.tip = options.tip;
     }
+
+    Level.prototype.createGalaxyIntoUniverse = function(universe, options) {
+      var galaxy, orbitalAnimation, star;
+      if (options == null) {
+        options = {};
+      }
+      star = new Star(options.star);
+      galaxy = new Galaxy({
+        star: star
+      });
+      galaxy.generateCorpses({
+        quantity: options.corpses.quantity,
+        radius: options.radius
+      });
+      orbitalAnimation = new OrbitalAnimation({
+        centerPoint: galaxy.star,
+        points: galaxy.corpses
+      });
+      orbitalAnimation.startAnimation();
+      universe.galaxies.push(galaxy);
+      return galaxy;
+    };
 
     Level.prototype.call = function(scene, options) {
       if (options == null) {
@@ -216,8 +238,8 @@
 
     Level.prototype.end = function(levelResult) {
       if (levelResult) {
-        if (this.scene && this.nextLevelName) {
-          this.scene.setLevel(levels.getLevel(this.nextLevelName));
+        if (this.scene && this.nextLevelId) {
+          this.scene.setLevel(levels.getLevel(this.nextLevelId));
         }
       } else {
         this.scene.setLevel(this);
@@ -232,26 +254,23 @@
   levels = new Levels();
 
   levels.push(new Level({
-    name: "level1",
-    nextLevelName: "level2",
+    id: "level1",
+    nextLevelId: "level2",
+    name: "one",
+    tip: "eat",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, galaxy, interaction, orbitalAnimation, star, universe;
-      star = new Star({
-        marginRadius: 20,
-        x: 200,
-        y: 150
-      });
-      galaxy = new Galaxy({
-        star: star,
-        corpses: []
-      });
-      star.gravitationalForce = 5;
-      galaxy.generateCorpses({
-        quantity: 10,
-        radius: 10
-      });
-      universe = new Universe({
-        galaxies: [galaxy]
+      var ccc, collisionsHandler, interaction, universe;
+      universe = new Universe();
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: 200,
+          y: 150,
+          marginRadius: 20
+        },
+        corpses: {
+          quantity: 10
+        },
+        radius: 5
       });
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
@@ -260,11 +279,6 @@
           y: 150
         })
       });
-      orbitalAnimation = new OrbitalAnimation({
-        centerPoint: galaxy.star,
-        points: galaxy.corpses
-      });
-      orbitalAnimation.startAnimation();
       scene.universes = [universe];
       scene.interaction = interaction;
       collisionsHandler = new CollisionsHandler();
@@ -280,6 +294,7 @@
             _results.push(level.end(true));
           } else if (collision.basePoint instanceof Corps) {
             clearInterval(ccc);
+            level.tip = "dots hurt";
             _results.push(level.end(false));
           } else {
             _results.push(void 0);
@@ -291,53 +306,31 @@
   }));
 
   levels.push(new Level({
-    name: "level2",
-    nextLevelName: "level2",
-    tip: "Tilt the universe",
+    id: "level2",
+    nextLevelId: "level3",
+    name: "two",
+    tip: "you got the point",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, galaxy, interaction, orbitalAnimation, star, universe;
-      star = new Star({
-        marginRadius: 20,
-        x: 0,
-        y: 0
-      });
-      galaxy = new Galaxy({
-        star: star,
-        corpses: []
-      });
-      star.gravitationalForce = 5;
-      galaxy.generateCorpses({
-        quantity: 180,
-        radius: 200
-      });
-      universe = new Universe({
-        galaxies: [galaxy]
+      var ccc, collisionsHandler, interaction, universe;
+      universe = new Universe();
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: 200,
+          y: 150,
+          marginRadius: 20
+        },
+        corpses: {
+          quantity: 30
+        },
+        radius: 20
       });
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
         defaultPoint: new Point({
           x: 500,
           y: 150
-        }),
-        onDeviceMotion: function(a, b, g, event) {
-          var array, _i, _len, _results;
-          array = scene.toPointArray({
-            only: Star
-          });
-          _results = [];
-          for (_i = 0, _len = array.length; _i < _len; _i++) {
-            star = array[_i];
-            star.x += b / 3;
-            _results.push(star.y += a / 3);
-          }
-          return _results;
-        }
+        })
       });
-      orbitalAnimation = new OrbitalAnimation({
-        centerPoint: galaxy.star,
-        points: galaxy.corpses
-      });
-      orbitalAnimation.startAnimation();
       scene.universes = [universe];
       scene.interaction = interaction;
       collisionsHandler = new CollisionsHandler();
@@ -354,6 +347,61 @@
             _results.push(level.end(true));
           } else if (collision.basePoint instanceof Corps) {
             clearInterval(ccc);
+            level.tip = "it hurts";
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
+    }
+  }));
+
+  levels.push(new Level({
+    id: "level3",
+    nextLevelId: "level3",
+    name: "three",
+    tip: "faster",
+    fn: function(scene, level) {
+      var ccc, collisionsHandler, interaction, universe;
+      universe = new Universe();
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: 200,
+          y: 150,
+          marginRadius: 20,
+          gravitationalForce: 10
+        },
+        corpses: {
+          quantity: 40
+        },
+        radius: 20
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: 500,
+          y: 150
+        })
+      });
+      scene.universes = [universe];
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        console.log(collisions);
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            level.tip = "ouch";
             _results.push(level.end(false));
           } else {
             _results.push(void 0);
@@ -910,7 +958,6 @@
       }
       Star.__super__.constructor.call(this, options);
       this.radius = 10;
-      this.gravitationalForce = 10;
       this.marginRadius = options.marginRadius;
       this.fillColor = "#57d0f3";
     }
@@ -918,8 +965,6 @@
     return Star;
 
   })(Corps);
-
-  window.Star = Star;
 
   Track = (function(_super) {
     __extends(Track, _super);

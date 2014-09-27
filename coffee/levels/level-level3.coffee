@@ -1,10 +1,10 @@
 # File of level 2
 # Push a new level into the array of levels
 levels.push new Level
-  id: "level2"
+  id: "level3"
   nextLevelId: "level3"
-  name: "two"
-  tip: "you got the point"
+  name: "three"
+  tip: "faster"
   fn: (scene, level)->
 
     universe = new Universe()
@@ -15,10 +15,10 @@ levels.push new Level
         x: 200
         y: 150
         marginRadius: 20
+        gravitationalForce: 10
       corpses:
-        quantity: 30
+        quantity: 40
       radius: 20
-
 
 
     # Bind the user's method of interaction and track it
@@ -27,6 +27,11 @@ levels.push new Level
       defaultPoint: new Point
         x: 500
         y: 150
+      # onDeviceMotion: (a, b, g, event)->
+      #   array = scene.toPointArray({only: Star})
+      #   for star in array
+      #     star.x += b/3
+      #     star.y += a/3
 
 
     # Set some values in the scene
@@ -46,5 +51,5 @@ levels.push new Level
           level.end(true)
         else if collision.basePoint instanceof Corps
           clearInterval ccc
-          level.tip = "it hurts"
+          level.tip = "ouch"
           level.end(false)

@@ -1,24 +1,23 @@
 # File of level 1
 # Push a new level into the array of levels
 levels.push new Level
-  name: "level1"
-  nextLevelName: "level2"
+  id: "level1"
+  nextLevelId: "level2"
+  name: "one"
+  tip: "eat"
   fn: (scene, level)->
-    # Set a galaxy with one star
-    star = new Star
-      marginRadius: 20
-      x: 200
-      y: 150
 
-    # star.gravitationalForce = 200
-    galaxy = new Galaxy({star: star, corpses: []})
-    star.gravitationalForce = 5
-    # Set galaxies
-    galaxy.generateCorpses
-      quantity: 10
-      radius: 10
-    # Wrap galaxies in a universe
-    universe = new Universe({galaxies: [galaxy]})
+    universe = new Universe()
+
+    # Function defined in levels.coffee
+    level.createGalaxyIntoUniverse universe,
+      star:
+        x: 200
+        y: 150
+        marginRadius: 20
+      corpses:
+        quantity: 10
+      radius: 5
 
     # Bind the user's method of interaction and track it
     interaction = new Interaction
@@ -27,12 +26,6 @@ levels.push new Level
         x: 500
         y: 150
 
-
-    # Setting animations
-    orbitalAnimation = new OrbitalAnimation
-      centerPoint: galaxy.star
-      points: galaxy.corpses
-    orbitalAnimation.startAnimation()
 
     # Set some values in the scene
     scene.universes = [universe]
@@ -49,4 +42,5 @@ levels.push new Level
           level.end(true)
         else if collision.basePoint instanceof Corps
           clearInterval ccc
+          level.tip = "dots hurt"
           level.end(false)

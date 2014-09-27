@@ -6,6 +6,7 @@ class Scene
     @interface = new Interface
       container: document.getElementById("interface")
 
+  # A useful function to put all the elements of the scene into a drawable array of points
   toPointArray: (options={})->
     array = []
 
@@ -36,7 +37,6 @@ class Scene
       array.push point for point in originalArray when point instanceof options.include
 
     array
-
 
   clearScene: ->
     @universes = []

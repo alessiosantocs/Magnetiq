@@ -2,11 +2,11 @@
 class Levels extends Array
   constructor: ->
 
-  getLevel: (name)->
-    for level in @ when level.name == name
+  getLevel: (id)->
+    for level in @ when level.id == id
       return level
 
-    console.error "Level #{name} was not found!"
+    console.error "Level #{id} was not found!"
 
   push: (level)->
     super level
@@ -14,7 +14,29 @@ class Levels extends Array
 # Class to instantiate new levels
 class Level
   constructor: (options={})->
-    {@name, @fn, @nextLevelName, @tip} = options
+    {@id, @name, @fn, @nextLevelId, @tip} = options
+
+  # A shortcut function to generate a galaxy in a level
+  createGalaxyIntoUniverse: (universe, options={})->
+    # First create a star
+    star = new Star options.star
+    # Assign the star to a new galaxy
+    galaxy = new Galaxy
+      star: star
+    # Generate corpses for the galaxy
+    galaxy.generateCorpses
+      quantity: options.corpses.quantity
+      radius: options.radius
+
+    # Start the animation for these points
+    orbitalAnimation = new OrbitalAnimation
+      centerPoint: galaxy.star
+      points: galaxy.corpses
+    orbitalAnimation.startAnimation()
+
+    universe.galaxies.push galaxy
+
+    galaxy
 
   call: (scene, options={})->
     {@onLevelEnding} = options
@@ -24,7 +46,7 @@ class Level
   # A basic method you should call when the level ends
   end: (levelResult)->
     if levelResult
-      @scene.setLevel levels.getLevel(@nextLevelName) if @scene and @nextLevelName
+      @scene.setLevel levels.getLevel(@nextLevelId) if @scene and @nextLevelId
     else
       @scene.setLevel @
     @onLevelEnding(levelResult) # Invoke the callback because the level has ended
