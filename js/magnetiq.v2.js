@@ -478,6 +478,19 @@
       this.canvas.addEventListener("touchend", function(event) {
         return event.preventDefault();
       });
+      window.ondevicemotion = function(event) {
+        var accelerationX, accelerationY, accelerationZ;
+        accelerationX = event.accelerationIncludingGravity.x;
+        accelerationY = event.accelerationIncludingGravity.y;
+        accelerationZ = event.accelerationIncludingGravity.z;
+        if (Math.abs(accelerationY) < 0.3) {
+          accelerationY = 0;
+        }
+        if (Math.abs(accelerationX) < 0.3) {
+          accelerationX = 0;
+        }
+        return interaction.pointers[0].recordMovement(interaction.pointers[0].x + accelerationY * 2, interaction.pointers[0].y + accelerationX * 2);
+      };
     }
 
     Interaction.prototype.toPointArray = function() {
