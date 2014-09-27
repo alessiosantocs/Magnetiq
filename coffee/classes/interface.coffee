@@ -30,9 +30,18 @@ class Interface
     mainMessage = @domStandardMessage.getElementsByClassName("message-main")[0]
     mainMessage.innerText = message
 
+    secondaryMessage = @domStandardMessage.getElementsByClassName("message-secondary")[0]
+
+    if options.secondaryMessage
+      secondaryMessage.innerText = options.secondaryMessage
+    else
+      secondaryMessage.innerText = ""
+
     instance = @
 
     @domStandardMessage.style.opacity = 1
+
+
 
     @showInterface()
 

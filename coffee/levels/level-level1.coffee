@@ -27,6 +27,7 @@ levels.push new Level
         x: 500
         y: 150
 
+
     # Setting animations
     orbitalAnimation = new OrbitalAnimation
       centerPoint: galaxy.star

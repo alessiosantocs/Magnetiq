@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Collision, CollisionsHandler, Corps, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
+  var Animation, Collision, CollisionsHandler, Corps, ExplosionAnimation, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -38,16 +38,24 @@
 
   })();
 
+  window.Point = Point;
+
   Animation = (function() {
     function Animation() {}
 
     Animation.prototype.renderAnimation = function() {};
 
+    Animation.prototype.resetTimer = function() {
+      return this.internalTimer = 0;
+    };
+
     Animation.prototype.startAnimation = function() {
       var instance;
+      this.internalTimer = 0;
       this.renderAnimation();
       instance = this;
       return setInterval(function() {
+        instance.internalTimer += 1;
         return instance.renderAnimation();
       }, 10);
     };
@@ -55,6 +63,41 @@
     return Animation;
 
   })();
+
+  ExplosionAnimation = (function(_super) {
+    __extends(ExplosionAnimation, _super);
+
+    function ExplosionAnimation(options) {
+      if (options == null) {
+        options = {};
+      }
+      this.point = options.point, this.pointArray = options.pointArray;
+      this.resetPoints();
+      this;
+    }
+
+    ExplosionAnimation.prototype.resetPoints = function() {
+      console.log(this.point);
+      this.explosionPoint = new Point();
+      this.pointArray.push(this.explosionPoint);
+      this.explosionPoint.set("x", 0);
+      this.explosionPoint.set("y", 0);
+      console.log(this.explosionPoint);
+      return true;
+    };
+
+    ExplosionAnimation.prototype.moveExplosionPoint = function(time) {
+      this.explosionPoint.x += time;
+      return console.log(this.explosionPoint.x);
+    };
+
+    ExplosionAnimation.prototype.renderAnimation = function() {
+      return this.moveExplosionPoint(this.internalTimer);
+    };
+
+    return ExplosionAnimation;
+
+  })(Animation);
 
   OrbitalAnimation = (function(_super) {
     var distanceFromCenter;
@@ -159,7 +202,7 @@
       if (options == null) {
         options = {};
       }
-      this.name = options.name, this.fn = options.fn, this.nextLevelName = options.nextLevelName;
+      this.name = options.name, this.fn = options.fn, this.nextLevelName = options.nextLevelName, this.tip = options.tip;
     }
 
     Level.prototype.call = function(scene, options) {
@@ -250,12 +293,13 @@
   levels.push(new Level({
     name: "level2",
     nextLevelName: "level2",
+    tip: "Tilt the universe",
     fn: function(scene, level) {
       var ccc, collisionsHandler, galaxy, interaction, orbitalAnimation, star, universe;
       star = new Star({
         marginRadius: 20,
-        x: 150,
-        y: 150
+        x: 0,
+        y: 0
       });
       galaxy = new Galaxy({
         star: star,
@@ -263,8 +307,8 @@
       });
       star.gravitationalForce = 5;
       galaxy.generateCorpses({
-        quantity: 40,
-        radius: 10
+        quantity: 180,
+        radius: 200
       });
       universe = new Universe({
         galaxies: [galaxy]
@@ -274,7 +318,20 @@
         defaultPoint: new Point({
           x: 500,
           y: 150
-        })
+        }),
+        onDeviceMotion: function(a, b, g, event) {
+          var array, _i, _len, _results;
+          array = scene.toPointArray({
+            only: Star
+          });
+          _results = [];
+          for (_i = 0, _len = array.length; _i < _len; _i++) {
+            star = array[_i];
+            star.x += b / 3;
+            _results.push(star.y += a / 3);
+          }
+          return _results;
+        }
       });
       orbitalAnimation = new OrbitalAnimation({
         centerPoint: galaxy.star,
@@ -394,6 +451,8 @@
 
   })(Point);
 
+  window.Corps = Corps;
+
   Galaxy = (function(_super) {
     __extends(Galaxy, _super);
 
@@ -451,7 +510,8 @@
       if (options == null) {
         options = {};
       }
-      this.canvas = options.canvas;
+      this.canvas = options.canvas, this.onDeviceMotion = options.onDeviceMotion;
+      this.onDeviceMotion || (this.onDeviceMotion = function(alpha, beta, gamma, event) {});
       options.defaultPoint || (options.defaultPoint = new Point({
         x: window.innerWidth,
         y: window.innerHeight
@@ -489,7 +549,8 @@
         if (Math.abs(accelerationX) < 0.3) {
           accelerationX = 0;
         }
-        return interaction.pointers[0].recordMovement(interaction.pointers[0].x + accelerationY * 2, interaction.pointers[0].y + accelerationX * 2);
+        interaction.onDeviceMotion(accelerationX, accelerationY, accelerationZ, event);
+        return true;
       };
     }
 
@@ -533,12 +594,18 @@
     };
 
     Interface.prototype.displayMessage = function(message, options) {
-      var instance, mainMessage;
+      var instance, mainMessage, secondaryMessage;
       if (options == null) {
         options = {};
       }
       mainMessage = this.domStandardMessage.getElementsByClassName("message-main")[0];
       mainMessage.innerText = message;
+      secondaryMessage = this.domStandardMessage.getElementsByClassName("message-secondary")[0];
+      if (options.secondaryMessage) {
+        secondaryMessage.innerText = options.secondaryMessage;
+      } else {
+        secondaryMessage.innerText = "";
+      }
       instance = this;
       this.domStandardMessage.style.opacity = 1;
       this.showInterface();
@@ -744,9 +811,11 @@
 
   Scene = (function() {
     function Scene(options) {
+      var scene;
       if (options == null) {
         options = {};
       }
+      scene = this;
       this.universes = options.universes, this.interaction = options.interaction;
       this["interface"] = new Interface({
         container: document.getElementById("interface")
@@ -754,7 +823,7 @@
     }
 
     Scene.prototype.toPointArray = function(options) {
-      var array, universe, _i, _len, _ref;
+      var array, originalArray, point, temparray, universe, _i, _j, _k, _l, _len, _len1, _len2, _len3, _len4, _m, _ref;
       if (options == null) {
         options = {};
       }
@@ -770,6 +839,41 @@
         universe = _ref[_i];
         array = array.concat(universe.toPointArray());
       }
+      originalArray = [];
+      if (options.include) {
+        for (_j = 0, _len1 = array.length; _j < _len1; _j++) {
+          point = array[_j];
+          originalArray.push(point);
+        }
+      }
+      if (options.only) {
+        temparray = [];
+        for (_k = 0, _len2 = array.length; _k < _len2; _k++) {
+          point = array[_k];
+          if (point instanceof options.only) {
+            temparray.push(point);
+          }
+        }
+        array = temparray;
+      }
+      if (options.except) {
+        temparray = [];
+        for (_l = 0, _len3 = array.length; _l < _len3; _l++) {
+          point = array[_l];
+          if (!(point instanceof options.except)) {
+            temparray.push(point);
+          }
+        }
+        array = temparray;
+      }
+      if (options.include) {
+        for (_m = 0, _len4 = originalArray.length; _m < _len4; _m++) {
+          point = originalArray[_m];
+          if (point instanceof options.include) {
+            array.push(point);
+          }
+        }
+      }
       return array;
     };
 
@@ -784,7 +888,8 @@
       }
       console.log(onLevelEnding);
       this["interface"].displayMessage(level.name, {
-        autoDismissAfter: 3000
+        autoDismissAfter: 3000,
+        secondaryMessage: level.tip
       });
       this.clearScene();
       return level.call(this, {
@@ -813,6 +918,8 @@
     return Star;
 
   })(Corps);
+
+  window.Star = Star;
 
   Track = (function(_super) {
     __extends(Track, _super);

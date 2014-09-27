@@ -1,11 +1,11 @@
 class Interaction
   constructor: (options={})->
-    {@canvas} = options
+    {@canvas, @onDeviceMotion} = options
+    @onDeviceMotion ||= (alpha, beta, gamma, event)->
 
     options.defaultPoint ||= new Point
       x: window.innerWidth
       y: window.innerHeight
-
 
     @pointers = [new Pointer
       defaultPoint: options.defaultPoint
@@ -38,10 +38,8 @@ class Interaction
 
       accelerationY = 0 if Math.abs(accelerationY) < 0.3
       accelerationX = 0 if Math.abs(accelerationX) < 0.3
-
-      interaction.pointers[0].recordMovement interaction.pointers[0].x + accelerationY * 2, interaction.pointers[0].y + accelerationX * 2
-
-      # console.log "x: #{accelerationX} y: #{accelerationY} z: #{accelerationZ}"
+      interaction.onDeviceMotion(accelerationX, accelerationY, accelerationZ, event)
+      true
 
   toPointArray: ->
     @pointers

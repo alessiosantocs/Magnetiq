@@ -28,3 +28,6 @@ class Corps extends Point
 
   drawIntoCanvas: (ctx)->
     super ctx
+
+
+window.Corps = Corps

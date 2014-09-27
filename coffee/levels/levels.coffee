@@ -14,7 +14,7 @@ class Levels extends Array
 # Class to instantiate new levels
 class Level
   constructor: (options={})->
-    {@name, @fn, @nextLevelName} = options
+    {@name, @fn, @nextLevelName, @tip} = options
 
   call: (scene, options={})->
     {@onLevelEnding} = options

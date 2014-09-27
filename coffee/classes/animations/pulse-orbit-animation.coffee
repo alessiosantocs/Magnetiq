@@ -1,3 +1,5 @@
+# This animation should be useful when asking the user to pickup something
+# NOT FINISHED YET NOR TESTED
 class PulseOrbitAnimation extends Animation
 
   # Helper method

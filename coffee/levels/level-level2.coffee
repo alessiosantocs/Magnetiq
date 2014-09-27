@@ -3,20 +3,21 @@
 levels.push new Level
   name: "level2"
   nextLevelName: "level2"
+  tip: "Tilt the universe"
   fn: (scene, level)->
     # Set a galaxy with one star
     star = new Star
       marginRadius: 20
-      x: 150
-      y: 150
+      x: 0
+      y: 0
 
     # star.gravitationalForce = 200
     galaxy = new Galaxy({star: star, corpses: []})
     star.gravitationalForce = 5
     # Set galaxies
     galaxy.generateCorpses
-      quantity: 40
-      radius: 10
+      quantity: 180
+      radius: 200
     # Wrap galaxies in a universe
     universe = new Universe({galaxies: [galaxy]})
 
@@ -26,6 +27,11 @@ levels.push new Level
       defaultPoint: new Point
         x: 500
         y: 150
+      onDeviceMotion: (a, b, g, event)->
+        array = scene.toPointArray({only: Star})
+        for star in array
+          star.x += b/3
+          star.y += a/3
 
     # Setting animations
     orbitalAnimation = new OrbitalAnimation

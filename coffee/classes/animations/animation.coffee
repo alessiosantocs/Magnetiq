@@ -6,10 +6,15 @@ class Animation
   # Override this to do stuff
   renderAnimation: ->
 
+  resetTimer: ->
+    @internalTimer = 0
+
   # Default binding method. Usually don't need to override
   startAnimation: ->
+    @internalTimer = 0
     @renderAnimation()
     instance = @
     setInterval ->
+      instance.internalTimer += 1
       instance.renderAnimation()
     , 10

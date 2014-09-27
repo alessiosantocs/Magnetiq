@@ -9,3 +9,6 @@ class Star extends Corps
     {@marginRadius} = options
 
     @fillColor = "#57d0f3"
+
+
+window.Star = Star

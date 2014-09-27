@@ -26,3 +26,6 @@ class Point
   # Override this method to give custom digest
   preDigest: ->
   postDigest: ->
+
+
+window.Point = Point

@@ -49,7 +49,7 @@ class Pointer extends Point
     track_head = @track.head()
     dX = Math.abs(@x - track_head.x)
     dY = Math.abs(@y - track_head.y)
-    
+
     x = 0
     y = 0
 
