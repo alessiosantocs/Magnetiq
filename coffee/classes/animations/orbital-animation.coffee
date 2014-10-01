@@ -5,6 +5,7 @@ class OrbitalAnimation extends Animation
     center.marginRadius + distance
 
   constructor: (options)->
+    super options
     {@centerPoint, @distance, @points} = options
 
   # Calculate a point's x and y

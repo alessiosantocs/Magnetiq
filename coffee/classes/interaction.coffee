@@ -1,12 +1,16 @@
 class Interaction
   constructor: (options={})->
-    {@canvas, @onDeviceMotion} = options
+    {@canvas, @onDeviceMotion, @ignoreUserInteraction} = options
     @onDeviceMotion ||= (alpha, beta, gamma, event)->
 
+    @ignoreUserInteraction ||= false
+
+    # Where should the pointers positioned at the beginning?
     options.defaultPoint ||= new Point
       x: window.innerWidth
       y: window.innerHeight
 
+    # For now we'll declare only one pointer
     @pointers = [new Pointer
       defaultPoint: options.defaultPoint
     ]
@@ -17,14 +21,17 @@ class Interaction
     @canvas.addEventListener "mousemove", (event)->
       event.preventDefault()
 
-      interaction.pointers[0].recordMovement event.pageX, event.pageY
+      interaction.pointers[0].recordMovement event.pageX, event.pageY unless interaction.ignoreUserInteraction
 
     # Listen for touch events
     @canvas.addEventListener "touchmove", (event)->
       event.preventDefault()
-      touch = event.touches[0]
-      interaction.pointers[0].recordMovement touch.pageX - 40, touch.pageY - 40
 
+      unless interaction.ignoreUserInteraction
+        touch = event.touches[0]
+        interaction.pointers[0].recordMovement touch.pageX - 40, touch.pageY - 40
+
+    # Disallow default actions
     @canvas.addEventListener "touchstart", (event)->
       event.preventDefault()
     @canvas.addEventListener "touchend", (event)->
@@ -36,6 +43,7 @@ class Interaction
       accelerationY = event.accelerationIncludingGravity.y
       accelerationZ = event.accelerationIncludingGravity.z
 
+      # A simple threshold
       accelerationY = 0 if Math.abs(accelerationY) < 0.3
       accelerationX = 0 if Math.abs(accelerationX) < 0.3
       interaction.onDeviceMotion(accelerationX, accelerationY, accelerationZ, event)

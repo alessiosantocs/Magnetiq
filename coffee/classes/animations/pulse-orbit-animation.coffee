@@ -7,6 +7,8 @@ class PulseOrbitAnimation extends Animation
     center.marginRadius + distance
 
   constructor: (options)->
+    super options
+    
     {@ring, @minRadius, @maxRadius} = options
     @timestamp = 0
 

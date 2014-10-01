@@ -2,6 +2,8 @@
 # NOT FINISHED YET NOR TESTED
 class ExplosionAnimation extends Animation
   constructor: (options={})->
+    super options
+    
     {@point, @pointArray} = options
 
     @resetPoints()

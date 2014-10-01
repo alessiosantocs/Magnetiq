@@ -1,5 +1,5 @@
 class Star extends Corps
-  constructor: (options={})->    
+  constructor: (options={})->
     super options
 
     @radius = 10
@@ -7,3 +7,5 @@ class Star extends Corps
     {@marginRadius} = options
 
     @fillColor = "#57d0f3"
+
+window.Star = Star

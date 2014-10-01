@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Collision, CollisionsHandler, Corps, ExplosionAnimation, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
+  var Animation, Collision, CollisionsHandler, Corps, ExplosionAnimation, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, MoveToAnimation, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -34,6 +34,10 @@
 
     Point.prototype.postDigest = function() {};
 
+    Point.prototype.isPositionedAt = function(point) {
+      return point.x === this.x && point.y === this.y;
+    };
+
     return Point;
 
   })();
@@ -41,7 +45,15 @@
   window.Point = Point;
 
   Animation = (function() {
-    function Animation() {}
+    function Animation(options) {
+      if (options == null) {
+        options = {};
+      }
+      this.onAnimationEnd = options.onAnimationEnd;
+      this.onAnimationEnd || (this.onAnimationEnd = function() {
+        return console.log("Animation ended");
+      });
+    }
 
     Animation.prototype.renderAnimation = function() {};
 
@@ -49,12 +61,19 @@
       return this.internalTimer = 0;
     };
 
+    Animation.prototype.stopAnimation = function() {
+      this.resetTimer();
+      clearInterval(this.intervalInstance);
+      return this.onAnimationEnd();
+    };
+
     Animation.prototype.startAnimation = function() {
       var instance;
+      console.log("Animation started");
       this.internalTimer = 0;
       this.renderAnimation();
       instance = this;
-      return setInterval(function() {
+      return this.intervalInstance = setInterval(function() {
         instance.internalTimer += 1;
         return instance.renderAnimation();
       }, 10);
@@ -71,6 +90,7 @@
       if (options == null) {
         options = {};
       }
+      ExplosionAnimation.__super__.constructor.call(this, options);
       this.point = options.point, this.pointArray = options.pointArray;
       this.resetPoints();
       this;
@@ -99,6 +119,72 @@
 
   })(Animation);
 
+  MoveToAnimation = (function(_super) {
+    __extends(MoveToAnimation, _super);
+
+    function MoveToAnimation(options) {
+      if (options == null) {
+        options = {};
+      }
+      MoveToAnimation.__super__.constructor.call(this, options);
+      this.point = options.point, this.toPoints = options.toPoints, this.repeatAutomatically = options.repeatAutomatically;
+      this.repeatAutomatically || (this.repeatAutomatically = false);
+      this.nextPointIndex = 0;
+      this.resetAnimation();
+      this;
+    }
+
+    MoveToAnimation.prototype.resetAnimation = function() {
+      this.originalX = this.point.x;
+      return this.originalY = this.point.y;
+    };
+
+    MoveToAnimation.prototype.calculatePointPositionInTime = function(time, fromPoint, toPoint) {
+      var point, slope, x, y;
+      if (toPoint.x < fromPoint.x) {
+        time *= -1;
+      }
+      slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x);
+      x = time + this.originalX;
+      y = slope * x - slope * fromPoint.x + fromPoint.y;
+      point = new Point({
+        x: x,
+        y: y
+      });
+      return point;
+    };
+
+    MoveToAnimation.prototype.renderAnimation = function() {
+      var nextPoint, point;
+      nextPoint = this.toPoints[this.nextPointIndex];
+      point = this.calculatePointPositionInTime(this.internalTimer, this.point, nextPoint);
+      if (!this.point.isPositionedAt(nextPoint)) {
+        this.point.x = point.x;
+        return this.point.y = point.y;
+      } else {
+        this.nextPointIndex++;
+        nextPoint = this.toPoints[this.nextPointIndex];
+        if (nextPoint) {
+          this.resetTimer();
+          return this.resetAnimation();
+        } else if (this.repeatAutomatically) {
+          this.nextPointIndex = 0;
+          this.resetTimer();
+          this.resetAnimation();
+          this.stopAnimation();
+          return this.startAnimation();
+        } else {
+          return this.stopAnimation();
+        }
+      }
+    };
+
+    return MoveToAnimation;
+
+  })(Animation);
+
+  window.MoveToAnimation = MoveToAnimation;
+
   OrbitalAnimation = (function(_super) {
     var distanceFromCenter;
 
@@ -109,6 +195,7 @@
     };
 
     function OrbitalAnimation(options) {
+      OrbitalAnimation.__super__.constructor.call(this, options);
       this.centerPoint = options.centerPoint, this.distance = options.distance, this.points = options.points;
     }
 
@@ -151,6 +238,7 @@
     };
 
     function PulseOrbitAnimation(options) {
+      PulseOrbitAnimation.__super__.constructor.call(this, options);
       this.ring = options.ring, this.minRadius = options.minRadius, this.maxRadius = options.maxRadius;
       this.timestamp = 0;
     }
@@ -252,6 +340,101 @@
   })();
 
   levels = new Levels();
+
+  levels.push(new Level({
+    id: "level0",
+    nextLevelId: "level1",
+    name: "One day in the galaxy",
+    tip: "P was floating free...",
+    fn: function(scene, level) {
+      var ccc, collisionsHandler, galaxy, generateAnimation, interaction, moveGalaxyStepForward, moveGalaxyTowardsPointer, universe;
+      universe = new Universe();
+      galaxy = level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: -100,
+          y: -100,
+          marginRadius: 20
+        },
+        corpses: {
+          quantity: 0
+        },
+        radius: 5
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: 500,
+          y: 150
+        }),
+        ignoreUserInteraction: true
+      });
+      generateAnimation = function() {
+        var anim, randomX, randomY;
+        randomY = Math.floor(Math.random() * 150 + 100);
+        randomX = Math.floor(Math.random() * randomY * 2.5);
+        anim = new MoveToAnimation({
+          point: interaction.pointers[0],
+          toPoints: [
+            new Point({
+              x: randomX,
+              y: randomY
+            })
+          ],
+          onAnimationEnd: function() {
+            return generateAnimation();
+          }
+        });
+        return anim.startAnimation();
+      };
+      generateAnimation();
+      moveGalaxyStepForward = new MoveToAnimation({
+        point: galaxy.star,
+        toPoints: [
+          new Point({
+            x: 100,
+            y: 100
+          })
+        ]
+      });
+      moveGalaxyTowardsPointer = new MoveToAnimation({
+        point: galaxy.star,
+        toPoints: [interaction.pointers[0]]
+      });
+      setTimeout(function() {
+        moveGalaxyStepForward.startAnimation();
+        return scene["interface"].displayMessage("An evil star spotted P", {
+          autoDismissAfter: 2000
+        });
+      }, 5000);
+      setTimeout(function() {
+        moveGalaxyTowardsPointer.resetAnimation();
+        return moveGalaxyTowardsPointer.startAnimation();
+      }, 9000);
+      scene.universes = [universe];
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            level.tip = "dots hurt";
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
+    }
+  }));
 
   levels.push(new Level({
     id: "level1",
@@ -690,8 +873,9 @@
       if (options == null) {
         options = {};
       }
-      this.canvas = options.canvas, this.onDeviceMotion = options.onDeviceMotion;
+      this.canvas = options.canvas, this.onDeviceMotion = options.onDeviceMotion, this.ignoreUserInteraction = options.ignoreUserInteraction;
       this.onDeviceMotion || (this.onDeviceMotion = function(alpha, beta, gamma, event) {});
+      this.ignoreUserInteraction || (this.ignoreUserInteraction = false);
       options.defaultPoint || (options.defaultPoint = new Point({
         x: window.innerWidth,
         y: window.innerHeight
@@ -704,13 +888,17 @@
       interaction = this;
       this.canvas.addEventListener("mousemove", function(event) {
         event.preventDefault();
-        return interaction.pointers[0].recordMovement(event.pageX, event.pageY);
+        if (!interaction.ignoreUserInteraction) {
+          return interaction.pointers[0].recordMovement(event.pageX, event.pageY);
+        }
       });
       this.canvas.addEventListener("touchmove", function(event) {
         var touch;
         event.preventDefault();
-        touch = event.touches[0];
-        return interaction.pointers[0].recordMovement(touch.pageX - 40, touch.pageY - 40);
+        if (!interaction.ignoreUserInteraction) {
+          touch = event.touches[0];
+          return interaction.pointers[0].recordMovement(touch.pageX - 40, touch.pageY - 40);
+        }
       });
       this.canvas.addEventListener("touchstart", function(event) {
         return event.preventDefault();
@@ -1098,6 +1286,8 @@
 
   })(Corps);
 
+  window.Star = Star;
+
   Track = (function(_super) {
     __extends(Track, _super);
 
@@ -1157,7 +1347,7 @@
   window.onload = function() {
     var engine, scene;
     scene = new Scene();
-    scene.setLevel(levels.getLevel("level1"));
+    scene.setLevel(levels.getLevel("level0"));
     window.scene = scene;
     engine = new MagnetiqEngine({
       canvas: document.getElementById("magnetiq"),

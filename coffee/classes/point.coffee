@@ -27,5 +27,7 @@ class Point
   preDigest: ->
   postDigest: ->
 
+  isPositionedAt: (point)->
+    point.x is @x and point.y is @y
 
 window.Point = Point
