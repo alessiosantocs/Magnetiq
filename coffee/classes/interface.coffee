@@ -15,20 +15,23 @@ class Interface
 
     true
 
-  hideInterface: ->
+  hideInterface: (onInterfaceHidden=->)->
     instance = @
     @container.className = ""
     @domOverlay.className = "overlay"
 
     setTimeout ->
       instance.container.style.display = "none"
-    , 1000
+      onInterfaceHidden()
+    , 800
 
     true
 
   displayMessage: (message, options={})->
     mainMessage = @domStandardMessage.getElementsByClassName("message-main")[0]
     mainMessage.innerText = message
+
+    options.onMessageHidden ||= ->
 
     secondaryMessage = @domStandardMessage.getElementsByClassName("message-secondary")[0]
 
@@ -50,7 +53,7 @@ class Interface
 
     if options.autoDismissAfter
       setTimeout ->
-        instance.hideInterface()
+        instance.hideInterface(options.onMessageHidden)
       , options.autoDismissAfter
 
     true

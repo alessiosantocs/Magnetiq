@@ -3,8 +3,8 @@
 levels.push new Level
   id: "level0"
   nextLevelId: "level1"
-  name: "One day in the galaxy"
-  tip: "P was floating free..."
+  name: "Beginning"
+  tip: "One day in the universe"
   fn: (scene, level)->
 
     universe = new Universe()
@@ -27,16 +27,18 @@ levels.push new Level
         y: 150
       ignoreUserInteraction: true
 
+    stopAnimation = false
     generateAnimation = ->
-      randomY = Math.floor(Math.random()*150 + 100)
-      randomX = Math.floor(Math.random()*randomY * 2.5)
-      anim = new MoveToAnimation
-        point: interaction.pointers[0]
-        toPoints: [new Point({x: randomX, y: randomY})]
-        onAnimationEnd: ->
-          generateAnimation()
-      anim.startAnimation()
-
+      unless stopAnimation
+        randomY = Math.floor(Math.random()*150 + 100)
+        randomX = Math.floor(Math.random()*randomY * 2.5)
+        interaction.pointers[0].moveToAnimated
+          toPoints: [new Point({x: randomX, y: randomY})]
+          onAnimationEnd: ->
+            generateAnimation()
+      else
+        interaction.pointers[0].moveToAnimated
+          toPoints: [new Point({x: 500, y: 150})]
     # Animate the pointer to make it float around the screen
     # anim = new MoveToAnimation
     #   point: interaction.pointers[0]
@@ -52,24 +54,29 @@ levels.push new Level
 
     generateAnimation()
 
-    moveGalaxyStepForward = new MoveToAnimation
-      point: galaxy.star
-      toPoints: [new Point({x: 100, y: 100})]
-
-    moveGalaxyTowardsPointer = new MoveToAnimation
-      point: galaxy.star
-      toPoints: [interaction.pointers[0]]
-
     setTimeout ->
-      moveGalaxyStepForward.startAnimation()
-      scene.interface.displayMessage "An evil star spotted P",
-        autoDismissAfter: 2000
+      scene.interface.displayMessage "A curious point",
+        autoDismissAfter: 1500
+        onMessageHidden: ->
+          scene.interface.displayMessage "started to wonder.",
+            autoDismissAfter: 3000
+            onMessageHidden: ->
+              scene.interface.displayMessage "Other universes",
+                secondaryMessage: "What would they look like?"
+                autoDismissAfter: 4000
+                onMessageHidden: ->
+                  setTimeout ->
+                    scene.interface.displayMessage "I'd love to see them!",
+                      secondaryMessage: "I want to see every single one"
+                      autoDismissAfter: 4000
+                      onMessageHidden: ->
+                        stopAnimation = true
+                        console.log "start new"
+                  , 1000
     , 5000
-
-    setTimeout ->
-      moveGalaxyTowardsPointer.resetAnimation()
-      moveGalaxyTowardsPointer.startAnimation()
-    , 9000
+    # setTimeout ->
+    #   scene.interface.displayMessage "started to wonder"
+    # , 8000
 
     # Set some values in the scene
     scene.universes = [universe]

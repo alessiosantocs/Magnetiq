@@ -1,14 +1,16 @@
 class Scene
   constructor: (options={})->
     scene = @
-    {@universes, @interaction} = options
+    {@universes, @interaction, @points} = options
+
+    @points ||= []
 
     @interface = new Interface
       container: document.getElementById("interface")
 
   # A useful function to put all the elements of the scene into a drawable array of points
   toPointArray: (options={})->
-    array = []
+    array = @points
 
     options.skipInteraction ||= false
     unless options.skipInteraction

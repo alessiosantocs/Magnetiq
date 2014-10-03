@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Collision, CollisionsHandler, Corps, ExplosionAnimation, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, MoveToAnimation, Orbit, OrbitalAnimation, Point, Pointer, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
+  var Animation, Collision, CollisionsHandler, Corps, ExplosionAnimation, Galaxy, Interaction, Interface, Level, Levels, MagnetiqEngine, MoveToAnimation, Orbit, OrbitalAnimation, Point, Pointer, Portal, PulseOrbitAnimation, Scene, Star, Track, Universe, levels,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -12,6 +12,8 @@
       this.x || (this.x = 0);
       this.y || (this.y = 0);
       this.fillColor = "#f00";
+      this.strokeColor = "#222";
+      this.strokeWidth = 0;
     }
 
     Point.prototype.set = function(property, value) {
@@ -25,9 +27,15 @@
     };
 
     Point.prototype.drawIntoCanvas = function(ctx) {
+      ctx.beginPath();
       ctx.fillStyle = this.fillColor;
+      ctx.strokeStyle = this.strokeColor;
+      ctx.lineWidth = this.strokeWidth;
       ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
-      return ctx.fill();
+      ctx.fill();
+      if (this.strokeWidth > 0) {
+        return ctx.stroke();
+      }
     };
 
     Point.prototype.preDigest = function() {};
@@ -36,6 +44,17 @@
 
     Point.prototype.isPositionedAt = function(point) {
       return point.x === this.x && point.y === this.y;
+    };
+
+    Point.prototype.moveToAnimated = function(options) {
+      var anim;
+      if (options == null) {
+        options = {};
+      }
+      options.point = this;
+      anim = new MoveToAnimation(options);
+      anim.startAnimation();
+      return anim;
     };
 
     return Point;
@@ -344,10 +363,10 @@
   levels.push(new Level({
     id: "level0",
     nextLevelId: "level1",
-    name: "One day in the galaxy",
-    tip: "P was floating free...",
+    name: "Beginning",
+    tip: "One day in the universe",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, galaxy, generateAnimation, interaction, moveGalaxyStepForward, moveGalaxyTowardsPointer, universe;
+      var ccc, collisionsHandler, galaxy, generateAnimation, interaction, stopAnimation, universe;
       universe = new Universe();
       galaxy = level.createGalaxyIntoUniverse(universe, {
         star: {
@@ -368,48 +387,63 @@
         }),
         ignoreUserInteraction: true
       });
+      stopAnimation = false;
       generateAnimation = function() {
-        var anim, randomX, randomY;
-        randomY = Math.floor(Math.random() * 150 + 100);
-        randomX = Math.floor(Math.random() * randomY * 2.5);
-        anim = new MoveToAnimation({
-          point: interaction.pointers[0],
-          toPoints: [
-            new Point({
-              x: randomX,
-              y: randomY
-            })
-          ],
-          onAnimationEnd: function() {
-            return generateAnimation();
-          }
-        });
-        return anim.startAnimation();
+        var randomX, randomY;
+        if (!stopAnimation) {
+          randomY = Math.floor(Math.random() * 150 + 100);
+          randomX = Math.floor(Math.random() * randomY * 2.5);
+          return interaction.pointers[0].moveToAnimated({
+            toPoints: [
+              new Point({
+                x: randomX,
+                y: randomY
+              })
+            ],
+            onAnimationEnd: function() {
+              return generateAnimation();
+            }
+          });
+        } else {
+          return interaction.pointers[0].moveToAnimated({
+            toPoints: [
+              new Point({
+                x: 500,
+                y: 150
+              })
+            ]
+          });
+        }
       };
       generateAnimation();
-      moveGalaxyStepForward = new MoveToAnimation({
-        point: galaxy.star,
-        toPoints: [
-          new Point({
-            x: 100,
-            y: 100
-          })
-        ]
-      });
-      moveGalaxyTowardsPointer = new MoveToAnimation({
-        point: galaxy.star,
-        toPoints: [interaction.pointers[0]]
-      });
       setTimeout(function() {
-        moveGalaxyStepForward.startAnimation();
-        return scene["interface"].displayMessage("An evil star spotted P", {
-          autoDismissAfter: 2000
+        return scene["interface"].displayMessage("A curious point", {
+          autoDismissAfter: 1500,
+          onMessageHidden: function() {
+            return scene["interface"].displayMessage("started to wonder.", {
+              autoDismissAfter: 3000,
+              onMessageHidden: function() {
+                return scene["interface"].displayMessage("Other universes", {
+                  secondaryMessage: "What would they look like?",
+                  autoDismissAfter: 4000,
+                  onMessageHidden: function() {
+                    return setTimeout(function() {
+                      return scene["interface"].displayMessage("I'd love to see them!", {
+                        secondaryMessage: "I want to see every single one",
+                        autoDismissAfter: 4000,
+                        onMessageHidden: function() {
+                          stopAnimation = true;
+                          return console.log("start new");
+                        }
+                      });
+                    }, 1000);
+                  }
+                });
+              }
+            });
+          }
         });
       }, 5000);
-      setTimeout(function() {
-        moveGalaxyTowardsPointer.resetAnimation();
-        return moveGalaxyTowardsPointer.startAnimation();
-      }, 9000);
       scene.universes = [universe];
       scene.interaction = interaction;
       collisionsHandler = new CollisionsHandler();
@@ -950,14 +984,18 @@
       return true;
     };
 
-    Interface.prototype.hideInterface = function() {
+    Interface.prototype.hideInterface = function(onInterfaceHidden) {
       var instance;
+      if (onInterfaceHidden == null) {
+        onInterfaceHidden = function() {};
+      }
       instance = this;
       this.container.className = "";
       this.domOverlay.className = "overlay";
       setTimeout(function() {
-        return instance.container.style.display = "none";
-      }, 1000);
+        instance.container.style.display = "none";
+        return onInterfaceHidden();
+      }, 800);
       return true;
     };
 
@@ -968,6 +1006,7 @@
       }
       mainMessage = this.domStandardMessage.getElementsByClassName("message-main")[0];
       mainMessage.innerText = message;
+      options.onMessageHidden || (options.onMessageHidden = function() {});
       secondaryMessage = this.domStandardMessage.getElementsByClassName("message-secondary")[0];
       if (options.secondaryMessage) {
         secondaryMessage.innerText = options.secondaryMessage;
@@ -982,7 +1021,7 @@
       }
       if (options.autoDismissAfter) {
         setTimeout(function() {
-          return instance.hideInterface();
+          return instance.hideInterface(options.onMessageHidden);
         }, options.autoDismissAfter);
       }
       return true;
@@ -1177,6 +1216,32 @@
 
   })(Point);
 
+  Portal = (function(_super) {
+    __extends(Portal, _super);
+
+    function Portal(options) {
+      if (options == null) {
+        options = {};
+      }
+      Portal.__super__.constructor.call(this, options);
+      this.radius = options.radius;
+      this.radius || (this.radius = 10);
+      this.fillColor = "#222";
+      this.strokeColor = "#888";
+      this.strokeWidth = 1;
+      this.gravitationalForce || (this.gravitationalForce = 5);
+      this.radius || (this.radius = 3);
+      if (this.radius instanceof Function) {
+        this.radius = this.radius(this);
+      }
+    }
+
+    return Portal;
+
+  })(Point);
+
+  window.Portal = Portal;
+
   Scene = (function() {
     function Scene(options) {
       var scene;
@@ -1184,7 +1249,8 @@
         options = {};
       }
       scene = this;
-      this.universes = options.universes, this.interaction = options.interaction;
+      this.universes = options.universes, this.interaction = options.interaction, this.points = options.points;
+      this.points || (this.points = []);
       this["interface"] = new Interface({
         container: document.getElementById("interface")
       });
@@ -1195,7 +1261,7 @@
       if (options == null) {
         options = {};
       }
-      array = [];
+      array = this.points;
       options.skipInteraction || (options.skipInteraction = false);
       if (!options.skipInteraction) {
         if (this.interaction) {
