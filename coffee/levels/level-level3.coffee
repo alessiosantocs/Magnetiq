@@ -12,6 +12,17 @@ levels.push new Level
     # Function defined in levels.coffee
     level.createGalaxyIntoUniverse universe,
       star:
+        x: 0
+        y: 0
+        marginRadius: 20
+        gravitationalForce: 10
+      corpses:
+        quantity: 40
+      radius: 20
+
+    # Create a second galaxy
+    level.createGalaxyIntoUniverse universe,
+      star:
         x: 200
         y: 150
         marginRadius: 20

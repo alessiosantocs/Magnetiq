@@ -2,7 +2,7 @@ window.onload = ->
 
   # Initialize a scene
   scene = new Scene()
-  scene.setLevel levels.getLevel("level0")
+  scene.setLevel levels.getLevel("level3")
   window.scene = scene
 
   # Starting the graphic engine

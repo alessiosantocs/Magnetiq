@@ -48,7 +48,7 @@ class MagnetiqEngine
     @pre_canvas = document.createElement "canvas"
     @pre_ctx = @pre_canvas.getContext "2d"
 
-    @canvas.width = @pre_canvas.width = window.innerWidth
-    @canvas.height = @pre_canvas.height = window.innerHeight
+    @canvas.width = @pre_canvas.width = @scene.width = window.innerWidth
+    @canvas.height = @pre_canvas.height = @scene.height = window.innerHeight
 
     drawSceneIntoCanvas(@scene, @pre_canvas, @pre_ctx, @ctx)

@@ -1,7 +1,7 @@
 class Scene
   constructor: (options={})->
     scene = @
-    {@universes, @interaction, @points} = options
+    {@universes, @interaction, @points, @width, @height} = options
 
     @points ||= []
 
