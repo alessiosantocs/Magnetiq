@@ -594,15 +594,27 @@
       universe = new Universe();
       level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: 200,
-          y: 150,
+          x: 0,
+          y: 0,
           marginRadius: 20,
           gravitationalForce: 10
         },
         corpses: {
-          quantity: 40
+          quantity: 60
         },
-        radius: 20
+        radius: 50
+      });
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: scene.width,
+          y: scene.height,
+          marginRadius: 20,
+          gravitationalForce: 10
+        },
+        corpses: {
+          quantity: 90
+        },
+        radius: 70
       });
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
@@ -1088,8 +1100,8 @@
     MagnetiqEngine.prototype.startEngine = function() {
       this.pre_canvas = document.createElement("canvas");
       this.pre_ctx = this.pre_canvas.getContext("2d");
-      this.canvas.width = this.pre_canvas.width = window.innerWidth;
-      this.canvas.height = this.pre_canvas.height = window.innerHeight;
+      this.canvas.width = this.pre_canvas.width = this.scene.width = window.innerWidth;
+      this.canvas.height = this.pre_canvas.height = this.scene.height = window.innerHeight;
       return drawSceneIntoCanvas(this.scene, this.pre_canvas, this.pre_ctx, this.ctx);
     };
 
@@ -1258,7 +1270,8 @@
         options = {};
       }
       scene = this;
-      this.universes = options.universes, this.interaction = options.interaction, this.points = options.points;
+      this.universes = options.universes, this.interaction = options.interaction, this.points = options.points, this.width = options.width, this.height = options.height;
+      this.universes || (this.universes = []);
       this.points || (this.points = []);
       this["interface"] = new Interface({
         container: document.getElementById("interface")
@@ -1422,13 +1435,13 @@
   window.onload = function() {
     var engine, scene;
     scene = new Scene();
-    scene.setLevel(levels.getLevel("level0"));
     window.scene = scene;
     engine = new MagnetiqEngine({
       canvas: document.getElementById("magnetiq"),
       scene: scene
     });
-    return engine.startEngine();
+    engine.startEngine();
+    return scene.setLevel(levels.getLevel("level3"));
   };
 
 }).call(this);
