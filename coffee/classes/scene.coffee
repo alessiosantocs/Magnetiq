@@ -3,6 +3,7 @@ class Scene
     scene = @
     {@universes, @interaction, @points, @width, @height} = options
 
+    @universes ||= []
     @points ||= []
 
     @interface = new Interface
@@ -15,6 +16,7 @@ class Scene
     options.skipInteraction ||= false
     unless options.skipInteraction
       array = array.concat(@interaction.toPointArray()) if @interaction
+    # Add universes to array
     array = array.concat(universe.toPointArray()) for universe in @universes
 
     # If options.include is active. Make a copy of the array

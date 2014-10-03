@@ -17,19 +17,19 @@ levels.push new Level
         marginRadius: 20
         gravitationalForce: 10
       corpses:
-        quantity: 40
-      radius: 20
+        quantity: 60
+      radius: 50
 
     # Create a second galaxy
     level.createGalaxyIntoUniverse universe,
       star:
-        x: 200
-        y: 150
+        x: scene.width
+        y: scene.height
         marginRadius: 20
         gravitationalForce: 10
       corpses:
-        quantity: 40
-      radius: 20
+        quantity: 90
+      radius: 70
 
 
     # Bind the user's method of interaction and track it
