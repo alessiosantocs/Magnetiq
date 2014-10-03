@@ -16,8 +16,8 @@ levels.push new Level
         y: 150
         marginRadius: 20
       corpses:
-        quantity: 10
-      radius: 5
+        quantity: 35
+      radius: 25
 
     # Bind the user's method of interaction and track it
     interaction = new Interaction

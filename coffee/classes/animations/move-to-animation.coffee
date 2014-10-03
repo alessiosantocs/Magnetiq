@@ -19,16 +19,36 @@ class MoveToAnimation extends Animation
     @originalY = @point.y
 
 
-  calculatePointPositionInTime: (time, fromPoint, toPoint)->
-    if toPoint.x < fromPoint.x
-      time *= -1
-    slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x)
-    x = time + @originalX
-    y = slope * x - slope * fromPoint.x + fromPoint.y
+  # calculatePointPositionInTime: (time, fromPoint, toPoint)->
+  #   if toPoint.x < fromPoint.x
+  #     time *= -1
+  #   slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x)
+  #   x = time + @originalX
+  #   y = slope * x - slope * fromPoint.x + fromPoint.y
+  #
+  #   point = new Point
+  #     x: x
+  #     y: y
+  #
+  #   point
 
-    point = new Point
-      x: x
-      y: y
+  calculatePointPositionInTime: (time, fromPoint, toPoint)->
+    @previousPoint ||= fromPoint
+
+    xMove = yMove = 1
+
+    if(toPoint.x < fromPoint.x)
+        xMove *= -1
+
+    if(toPoint.y < fromPoint.y)
+        yMove *= -1
+
+    x = @previousPoint.x + xMove
+    y = @previousPoint.y + yMove
+
+    @previousPoint = point = new Point
+        x: x
+        y: y
 
     point
 
