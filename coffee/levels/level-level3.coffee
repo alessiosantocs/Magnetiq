@@ -12,21 +12,21 @@ levels.push new Level
     # Function defined in levels.coffee
     level.createGalaxyIntoUniverse universe,
       star:
-        x: 0
-        y: 0
-        marginRadius: 20
-        gravitationalForce: 10
+        x: 20
+        y: 20
+        marginRadius: 40
+        gravitationalForce: 6
       corpses:
         quantity: 60
-      radius: 50
+      radius: 45
 
     # Create a second galaxy
     level.createGalaxyIntoUniverse universe,
       star:
-        x: scene.width
-        y: scene.height
-        marginRadius: 20
-        gravitationalForce: 10
+        x: scene.width - 40
+        y: scene.height - 40
+        marginRadius: 30
+        gravitationalForce: 8
       corpses:
         quantity: 90
       radius: 70
@@ -36,13 +36,13 @@ levels.push new Level
     interaction = new Interaction
       canvas: document.getElementById("magnetiq")
       defaultPoint: new Point
-        x: 500
-        y: 150
-      # onDeviceMotion: (a, b, g, event)->
-      #   array = scene.toPointArray({only: Star})
-      #   for star in array
-      #     star.x += b/3
-      #     star.y += a/3
+        x: scene.width / 3.5
+        y: scene.height - 30
+      onDeviceMotion: (a, b, g, event)->
+        array = scene.toPointArray({only: Pointer})
+        for star in array
+          star.x += b * 2
+          star.y += a * 2
 
 
     # Set some values in the scene
@@ -53,13 +53,15 @@ levels.push new Level
     # Setting what happens on collision
     collisionsHandler = new CollisionsHandler()
     ccc = collisionsHandler.onCollisionAmongst scene.toPointArray({skipInteraction: true}), [scene.interaction.pointers[0].track.head()], (collisions)->
-      console.log collisions
 
       for collision in collisions
-        # console.log collision
+
         if collision.basePoint instanceof Star
-          clearInterval ccc
-          level.end(true)
+          collision.basePoint.collect()
+
+          if scene.toPointArray({only: Star}).reduce((previous, current)-> previous.isCollected() and current.isCollected())
+            clearInterval ccc
+            level.end(true)
         else if collision.basePoint instanceof Corps
           clearInterval ccc
           level.tip = "ouch"

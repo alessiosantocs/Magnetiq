@@ -585,22 +585,22 @@
       universe = new Universe();
       level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: 0,
-          y: 0,
-          marginRadius: 20,
-          gravitationalForce: 10
+          x: 20,
+          y: 20,
+          marginRadius: 40,
+          gravitationalForce: 6
         },
         corpses: {
           quantity: 60
         },
-        radius: 50
+        radius: 45
       });
       level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: scene.width,
-          y: scene.height,
-          marginRadius: 20,
-          gravitationalForce: 10
+          x: scene.width - 40,
+          y: scene.height - 40,
+          marginRadius: 30,
+          gravitationalForce: 8
         },
         corpses: {
           quantity: 90
@@ -610,9 +610,22 @@
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
         defaultPoint: new Point({
-          x: 500,
-          y: 150
-        })
+          x: scene.width / 3.5,
+          y: scene.height - 30
+        }),
+        onDeviceMotion: function(a, b, g, event) {
+          var array, star, _i, _len, _results;
+          array = scene.toPointArray({
+            only: Pointer
+          });
+          _results = [];
+          for (_i = 0, _len = array.length; _i < _len; _i++) {
+            star = array[_i];
+            star.x += b * 2;
+            _results.push(star.y += a * 2);
+          }
+          return _results;
+        }
       });
       scene.universes = [universe];
       scene.interaction = interaction;
@@ -621,13 +634,21 @@
         skipInteraction: true
       }), [scene.interaction.pointers[0].track.head()], function(collisions) {
         var collision, _i, _len, _results;
-        console.log(collisions);
         _results = [];
         for (_i = 0, _len = collisions.length; _i < _len; _i++) {
           collision = collisions[_i];
           if (collision.basePoint instanceof Star) {
-            clearInterval(ccc);
-            _results.push(level.end(true));
+            collision.basePoint.collect();
+            if (scene.toPointArray({
+              only: Star
+            }).reduce(function(previous, current) {
+              return previous.isCollected() && current.isCollected();
+            })) {
+              clearInterval(ccc);
+              _results.push(level.end(true));
+            } else {
+              _results.push(void 0);
+            }
           } else if (collision.basePoint instanceof Corps) {
             clearInterval(ccc);
             level.tip = "ouch";
@@ -915,7 +936,7 @@
 
   Interaction = (function() {
     function Interaction(options) {
-      var interaction;
+      var initialMotionEvent, interaction;
       if (options == null) {
         options = {};
       }
@@ -952,11 +973,27 @@
       this.canvas.addEventListener("touchend", function(event) {
         return event.preventDefault();
       });
+      initialMotionEvent = null;
       window.ondevicemotion = function(event) {
         var accelerationX, accelerationY, accelerationZ;
-        accelerationX = event.accelerationIncludingGravity.x;
-        accelerationY = event.accelerationIncludingGravity.y;
-        accelerationZ = event.accelerationIncludingGravity.z;
+        if (!initialMotionEvent) {
+          initialMotionEvent = {
+            accelerationIncludingGravity: {
+              x: event.accelerationIncludingGravity.x,
+              y: event.accelerationIncludingGravity.y,
+              z: event.accelerationIncludingGravity.z
+            }
+          };
+          if (Math.abs(initialMotionEvent.accelerationIncludingGravity.x) > 0.8) {
+            initialMotionEvent.accelerationIncludingGravity.x = 0;
+          }
+          if (Math.abs(initialMotionEvent.accelerationIncludingGravity.y) > 0.8) {
+            initialMotionEvent.accelerationIncludingGravity.y = 0;
+          }
+        }
+        accelerationX = event.accelerationIncludingGravity.x - initialMotionEvent.accelerationIncludingGravity.x;
+        accelerationY = event.accelerationIncludingGravity.y - initialMotionEvent.accelerationIncludingGravity.y;
+        accelerationZ = event.accelerationIncludingGravity.z - initialMotionEvent.accelerationIncludingGravity.z;
         if (Math.abs(accelerationY) < 0.3) {
           accelerationY = 0;
         }
@@ -1357,9 +1394,22 @@
       }
       Star.__super__.constructor.call(this, options);
       this.radius = 10;
+      this.collected = false;
       this.marginRadius = options.marginRadius;
       this.fillColor = "#57d0f3";
     }
+
+    Star.prototype.collect = function() {
+      this.strokeColor = "#57d0f3";
+      this.fillColor = "#222";
+      this.strokeWidth = 2;
+      this.gravitationalForce = 2;
+      return this.collected = true;
+    };
+
+    Star.prototype.isCollected = function() {
+      return this.collected;
+    };
 
     return Star;
 
@@ -1410,7 +1460,7 @@
 
     Universe.prototype.toPointArray = function() {
       var array, galaxy, _i, _len, _ref;
-      array = [this];
+      array = [];
       _ref = this.galaxies;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         galaxy = _ref[_i];

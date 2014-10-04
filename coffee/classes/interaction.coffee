@@ -38,10 +38,30 @@ class Interaction
       event.preventDefault()
 
     # Tracking accelerator
+    initialMotionEvent = null
+
     window.ondevicemotion = (event)->
-      accelerationX = event.accelerationIncludingGravity.x
-      accelerationY = event.accelerationIncludingGravity.y
-      accelerationZ = event.accelerationIncludingGravity.z
+      # Save the initial motion of the device in order to use it as a base
+      unless initialMotionEvent
+        # Make a safe copy of the object
+        initialMotionEvent =
+          accelerationIncludingGravity:
+            x: event.accelerationIncludingGravity.x
+            y: event.accelerationIncludingGravity.y
+            z: event.accelerationIncludingGravity.z
+
+        # If values are too high it means you're still trying to move the pointer
+        if Math.abs(initialMotionEvent.accelerationIncludingGravity.x) > 0.8
+          initialMotionEvent.accelerationIncludingGravity.x = 0
+        if Math.abs(initialMotionEvent.accelerationIncludingGravity.y) > 0.8
+          initialMotionEvent.accelerationIncludingGravity.y = 0
+        # Therefore set x and y to 0 as default
+
+      accelerationX = event.accelerationIncludingGravity.x - initialMotionEvent.accelerationIncludingGravity.x
+      accelerationY = event.accelerationIncludingGravity.y - initialMotionEvent.accelerationIncludingGravity.y
+      accelerationZ = event.accelerationIncludingGravity.z - initialMotionEvent.accelerationIncludingGravity.z
+
+
 
       # A simple threshold
       accelerationY = 0 if Math.abs(accelerationY) < 0.3

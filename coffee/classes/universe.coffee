@@ -9,7 +9,7 @@ class Universe extends Point
     @galaxies.push galaxy
 
   toPointArray: ->
-    array = [@]
+    array = []
 
     array = array.concat(galaxy.toPointArray()) for galaxy in @galaxies
 
