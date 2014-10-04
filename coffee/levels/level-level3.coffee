@@ -41,8 +41,8 @@ levels.push new Level
       onDeviceMotion: (a, b, g, event)->
         array = scene.toPointArray({only: Pointer})
         for star in array
-          star.x += b * 2
-          star.y += a * 2
+          star.x += b * 3
+          star.y += a * 3
 
 
     # Set some values in the scene

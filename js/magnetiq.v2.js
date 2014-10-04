@@ -630,8 +630,8 @@
           _results = [];
           for (_i = 0, _len = array.length; _i < _len; _i++) {
             star = array[_i];
-            star.x += b * 2;
-            _results.push(star.y += a * 2);
+            star.x += b * 3;
+            _results.push(star.y += a * 3);
           }
           return _results;
         }
@@ -1513,7 +1513,7 @@
       scene: scene
     });
     engine.startEngine();
-    return scene.setLevel(levels.getLevel("level5"));
+    return scene.setLevel(levels.getLevel("level3"));
   };
 
 }).call(this);
