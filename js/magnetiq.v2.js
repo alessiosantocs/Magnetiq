@@ -1491,7 +1491,7 @@
       scene: scene
     });
     engine.startEngine();
-    return scene.setLevel(levels.getLevel("level3"));
+    return scene.setLevel(levels.getLevel("level2"));
   };
 
 }).call(this);
