@@ -747,21 +747,33 @@
       universe = new Universe();
       level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: -150,
-          y: 150,
+          x: -250,
+          y: -250,
+          marginRadius: 20,
+          gravitationalForce: 7
+        },
+        corpses: {
+          quantity: 90
+        },
+        radius: 70
+      });
+      level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: scene.width + 250,
+          y: scene.height + 250,
           marginRadius: 20,
           gravitationalForce: 8
         },
         corpses: {
-          quantity: 150
+          quantity: 100
         },
-        radius: 100
+        radius: 80
       });
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
         defaultPoint: new Point({
-          x: 500,
-          y: 150
+          x: scene.width / 2,
+          y: scene.height / 2
         }),
         onDeviceMotion: function(a, b, g, event) {
           var array, star, _i, _len, _results;
@@ -771,7 +783,8 @@
           _results = [];
           for (_i = 0, _len = array.length; _i < _len; _i++) {
             star = array[_i];
-            _results.push(star.x += b / 3);
+            star.x -= b / 2;
+            _results.push(star.y -= a / 2);
           }
           return _results;
         }
@@ -788,8 +801,17 @@
         for (_i = 0, _len = collisions.length; _i < _len; _i++) {
           collision = collisions[_i];
           if (collision.basePoint instanceof Star) {
-            clearInterval(ccc);
-            _results.push(level.end(true));
+            collision.basePoint.collect();
+            if (scene.toPointArray({
+              only: Star
+            }).reduce(function(previous, current) {
+              return previous.isCollected() && current.isCollected();
+            })) {
+              clearInterval(ccc);
+              _results.push(level.end(true));
+            } else {
+              _results.push(void 0);
+            }
           } else if (collision.basePoint instanceof Corps) {
             clearInterval(ccc);
             level.tip = "!#/:O";
@@ -1491,7 +1513,7 @@
       scene: scene
     });
     engine.startEngine();
-    return scene.setLevel(levels.getLevel("level2"));
+    return scene.setLevel(levels.getLevel("level5"));
   };
 
 }).call(this);

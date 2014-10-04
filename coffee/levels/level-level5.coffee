@@ -12,26 +12,36 @@ levels.push new Level
     # Function defined in levels.coffee
     level.createGalaxyIntoUniverse universe,
       star:
-        x: -150
-        y: 150
+        x: -250
+        y: -250
+        marginRadius: 20
+        gravitationalForce: 7
+      corpses:
+        quantity: 90
+      radius: 70
+
+    level.createGalaxyIntoUniverse universe,
+      star:
+        x: scene.width + 250
+        y: scene.height + 250
         marginRadius: 20
         gravitationalForce: 8
       corpses:
-        quantity: 150
-      radius: 100
+        quantity: 100
+      radius: 80
 
 
     # Bind the user's method of interaction and track it
     interaction = new Interaction
       canvas: document.getElementById("magnetiq")
       defaultPoint: new Point
-        x: 500
-        y: 150
+        x: scene.width / 2
+        y: scene.height / 2
       onDeviceMotion: (a, b, g, event)->
         array = scene.toPointArray({only: Star})
         for star in array
-          star.x += b/3
-          # star.y += a/3
+          star.x -= b / 2
+          star.y -= a / 2
 
 
     # Set some values in the scene
@@ -47,8 +57,12 @@ levels.push new Level
       for collision in collisions
         # console.log collision
         if collision.basePoint instanceof Star
-          clearInterval ccc
-          level.end(true)
+          collision.basePoint.collect()
+
+          if scene.toPointArray({only: Star}).reduce((previous, current)-> previous.isCollected() and current.isCollected())
+            clearInterval ccc
+            level.end(true)
+
         else if collision.basePoint instanceof Corps
           clearInterval ccc
           level.tip = "!#/:O"
