@@ -1209,6 +1209,8 @@
       this.pre_ctx = this.pre_canvas.getContext("2d");
       this.canvas.width = this.pre_canvas.width = this.scene.width = window.innerWidth;
       this.canvas.height = this.pre_canvas.height = this.scene.height = window.innerHeight;
+      this.pre_canvas.width *= 5;
+      this.pre_canvas.height *= 5;
       return drawSceneIntoCanvas(this.scene, this.pre_canvas, this.pre_ctx, this.ctx);
     };
 
@@ -1564,7 +1566,7 @@
       scene: scene
     });
     engine.startEngine();
-    return scene.setLevel(levels.getLevel("level1"));
+    return scene.setLevel(levels.getLevel("level5"));
   };
 
 }).call(this);

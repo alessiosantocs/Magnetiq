@@ -51,4 +51,7 @@ class MagnetiqEngine
     @canvas.width = @pre_canvas.width = @scene.width = window.innerWidth
     @canvas.height = @pre_canvas.height = @scene.height = window.innerHeight
 
+    @pre_canvas.width *= 5
+    @pre_canvas.height *= 5
+
     drawSceneIntoCanvas(@scene, @pre_canvas, @pre_ctx, @ctx)

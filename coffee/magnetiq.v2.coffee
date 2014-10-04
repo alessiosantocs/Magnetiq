@@ -9,4 +9,4 @@ window.onload = ->
   engine = new MagnetiqEngine({canvas: document.getElementById("magnetiq"), scene: scene})
   engine.startEngine()
 
-  scene.setLevel levels.getLevel("level1")
+  scene.setLevel levels.getLevel("level5")
