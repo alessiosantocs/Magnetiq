@@ -33,7 +33,7 @@ class MagnetiqEngine
 
   drawIntoFinalCanvas = (canvas, final_ctx)->
     final_ctx.clearRect(0,0,canvas.width,canvas.height)
-    final_ctx.drawImage(canvas, 0, 0)
+    final_ctx.drawImage(canvas, (@scene.universes[0] || {x: 0}).x, (@scene.universes[0] || {y: 0}).y)
 
 
   # Ask for canvas and scene ({canvas: <canvas>, scene: Scene object})

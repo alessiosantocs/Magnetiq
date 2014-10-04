@@ -1,7 +1,8 @@
 class Interaction
   constructor: (options={})->
-    {@canvas, @onDeviceMotion, @ignoreUserInteraction} = options
+    {@canvas, @onDeviceMotion, @onTouchInteraction, @ignoreUserInteraction} = options
     @onDeviceMotion ||= (alpha, beta, gamma, event)->
+    @onTouchInteraction ||= (x, y, deltaX, deltaY)->
 
     @ignoreUserInteraction ||= false
 
@@ -23,17 +24,30 @@ class Interaction
 
       interaction.pointers[0].recordMovement event.pageX, event.pageY unless interaction.ignoreUserInteraction
 
+    currentTouchEvent = null
     # Listen for touch events
     @canvas.addEventListener "touchmove", (event)->
       event.preventDefault()
-
       unless interaction.ignoreUserInteraction
+        firstCurrentTouch = currentTouchEvent.touches[0]
         touch = event.touches[0]
-        interaction.pointers[0].recordMovement touch.pageX - 40, touch.pageY - 40
+
+        deltaX = touch.pageX - firstCurrentTouch.pageX
+        deltaY = touch.pageY - firstCurrentTouch.pageY
+
+        pageX = touch.pageX
+        pageY = touch.pageY
+
+        interaction.onTouchInteraction(pageX, pageY, deltaX, deltaY)
+        # interaction.pointers[0].recordMovement touch.pageX - 40, touch.pageY - 40
+
+        currentTouchEvent = event
 
     # Disallow default actions
     @canvas.addEventListener "touchstart", (event)->
       event.preventDefault()
+      currentTouchEvent = event
+      console.log currentTouchEvent
     @canvas.addEventListener "touchend", (event)->
       event.preventDefault()
 

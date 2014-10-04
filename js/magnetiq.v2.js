@@ -498,7 +498,24 @@
         defaultPoint: new Point({
           x: 500,
           y: 150
-        })
+        }),
+        onTouchInteraction: function(x, y, deltaX, deltaY) {
+          universe.x += deltaX / 2;
+          return universe.y += deltaY / 2;
+        },
+        onDeviceMotion: function(a, b, g, event) {
+          var array, star, _i, _len, _results;
+          array = scene.toPointArray({
+            only: Pointer
+          });
+          _results = [];
+          for (_i = 0, _len = array.length; _i < _len; _i++) {
+            star = array[_i];
+            star.x += b * 3;
+            _results.push(star.y += a * 3);
+          }
+          return _results;
+        }
       });
       scene.universes = [universe];
       scene.interaction = interaction;
@@ -550,7 +567,20 @@
         defaultPoint: new Point({
           x: 500,
           y: 150
-        })
+        }),
+        onDeviceMotion: function(a, b, g, event) {
+          var array, star, _i, _len, _results;
+          array = scene.toPointArray({
+            only: Pointer
+          });
+          _results = [];
+          for (_i = 0, _len = array.length; _i < _len; _i++) {
+            star = array[_i];
+            star.x += b * 3;
+            _results.push(star.y += a * 3);
+          }
+          return _results;
+        }
       });
       scene.universes = [universe];
       scene.interaction = interaction;
@@ -787,6 +817,10 @@
             _results.push(star.y -= a / 2);
           }
           return _results;
+        },
+        onTouchInteraction: function(x, y, deltaX, deltaY) {
+          universe.x += deltaX / 2;
+          return universe.y += deltaY / 2;
         }
       });
       scene.universes = [universe];
@@ -967,12 +1001,13 @@
 
   Interaction = (function() {
     function Interaction(options) {
-      var initialMotionEvent, interaction;
+      var currentTouchEvent, initialMotionEvent, interaction;
       if (options == null) {
         options = {};
       }
-      this.canvas = options.canvas, this.onDeviceMotion = options.onDeviceMotion, this.ignoreUserInteraction = options.ignoreUserInteraction;
+      this.canvas = options.canvas, this.onDeviceMotion = options.onDeviceMotion, this.onTouchInteraction = options.onTouchInteraction, this.ignoreUserInteraction = options.ignoreUserInteraction;
       this.onDeviceMotion || (this.onDeviceMotion = function(alpha, beta, gamma, event) {});
+      this.onTouchInteraction || (this.onTouchInteraction = function(x, y, deltaX, deltaY) {});
       this.ignoreUserInteraction || (this.ignoreUserInteraction = false);
       options.defaultPoint || (options.defaultPoint = new Point({
         x: window.innerWidth,
@@ -990,16 +1025,25 @@
           return interaction.pointers[0].recordMovement(event.pageX, event.pageY);
         }
       });
+      currentTouchEvent = null;
       this.canvas.addEventListener("touchmove", function(event) {
-        var touch;
+        var deltaX, deltaY, firstCurrentTouch, pageX, pageY, touch;
         event.preventDefault();
         if (!interaction.ignoreUserInteraction) {
+          firstCurrentTouch = currentTouchEvent.touches[0];
           touch = event.touches[0];
-          return interaction.pointers[0].recordMovement(touch.pageX - 40, touch.pageY - 40);
+          deltaX = touch.pageX - firstCurrentTouch.pageX;
+          deltaY = touch.pageY - firstCurrentTouch.pageY;
+          pageX = touch.pageX;
+          pageY = touch.pageY;
+          interaction.onTouchInteraction(pageX, pageY, deltaX, deltaY);
+          return currentTouchEvent = event;
         }
       });
       this.canvas.addEventListener("touchstart", function(event) {
-        return event.preventDefault();
+        event.preventDefault();
+        currentTouchEvent = event;
+        return console.log(currentTouchEvent);
       });
       this.canvas.addEventListener("touchend", function(event) {
         return event.preventDefault();
@@ -1145,7 +1189,11 @@
 
     drawIntoFinalCanvas = function(canvas, final_ctx) {
       final_ctx.clearRect(0, 0, canvas.width, canvas.height);
-      return final_ctx.drawImage(canvas, 0, 0);
+      return final_ctx.drawImage(canvas, (this.scene.universes[0] || {
+        x: 0
+      }).x, (this.scene.universes[0] || {
+        y: 0
+      }).y);
     };
 
     function MagnetiqEngine(options) {
@@ -1483,6 +1531,9 @@
       Universe.__super__.constructor.call(this, options);
       this.galaxies = options.galaxies;
       this.galaxies || (this.galaxies = []);
+      this.fillColor = "#222";
+      this.strokeColor = "#555";
+      this.strokeWidth = 1;
     }
 
     Universe.prototype.addGalaxy = function(galaxy) {
@@ -1491,7 +1542,7 @@
 
     Universe.prototype.toPointArray = function() {
       var array, galaxy, _i, _len, _ref;
-      array = [];
+      array = [this];
       _ref = this.galaxies;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         galaxy = _ref[_i];
@@ -1513,7 +1564,7 @@
       scene: scene
     });
     engine.startEngine();
-    return scene.setLevel(levels.getLevel("level3"));
+    return scene.setLevel(levels.getLevel("level1"));
   };
 
 }).call(this);

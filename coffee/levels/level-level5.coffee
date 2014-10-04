@@ -42,6 +42,9 @@ levels.push new Level
         for star in array
           star.x -= b / 2
           star.y -= a / 2
+      onTouchInteraction: (x, y, deltaX, deltaY)->
+        universe.x += deltaX / 2
+        universe.y += deltaY / 2
 
 
     # Set some values in the scene
