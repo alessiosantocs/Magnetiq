@@ -159,14 +159,18 @@
     };
 
     MoveToAnimation.prototype.calculatePointPositionInTime = function(time, fromPoint, toPoint) {
-      var point, slope, x, y;
+      var point, x, xMove, y, yMove;
+      this.previousPoint || (this.previousPoint = fromPoint);
+      xMove = yMove = 1;
       if (toPoint.x < fromPoint.x) {
-        time *= -1;
+        xMove *= -1;
       }
-      slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x);
-      x = time + this.originalX;
-      y = slope * x - slope * fromPoint.x + fromPoint.y;
-      point = new Point({
+      if (toPoint.y < fromPoint.y) {
+        yMove *= -1;
+      }
+      x = this.previousPoint.x + xMove;
+      y = this.previousPoint.y + yMove;
+      this.previousPoint = point = new Point({
         x: x,
         y: y
       });
@@ -485,9 +489,9 @@
           marginRadius: 20
         },
         corpses: {
-          quantity: 10
+          quantity: 35
         },
-        radius: 5
+        radius: 25
       });
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
@@ -528,11 +532,11 @@
     name: "two",
     tip: "you got the point",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, interaction, universe;
+      var ccc, collisionsHandler, galaxy, galaxy_animation, interaction, universe;
       universe = new Universe();
-      level.createGalaxyIntoUniverse(universe, {
+      galaxy = level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: 200,
+          x: 0,
           y: 150,
           marginRadius: 20
         },
@@ -550,6 +554,11 @@
       });
       scene.universes = [universe];
       scene.interaction = interaction;
+      galaxy_animation = new MoveToAnimation({
+        point: galaxy.star,
+        toPoints: interaction.pointers
+      });
+      galaxy_animation.startAnimation();
       collisionsHandler = new CollisionsHandler();
       return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
         skipInteraction: true

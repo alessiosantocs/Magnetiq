@@ -10,9 +10,9 @@ levels.push new Level
     universe = new Universe()
 
     # Function defined in levels.coffee
-    level.createGalaxyIntoUniverse universe,
+    galaxy = level.createGalaxyIntoUniverse universe,
       star:
-        x: 200
+        x: 0
         y: 150
         marginRadius: 20
       corpses:
@@ -33,6 +33,12 @@ levels.push new Level
     scene.universes = [universe]
     scene.interaction = interaction
     # scene.animations.push orbitalAnimation
+
+    galaxy_animation = new MoveToAnimation
+        point: galaxy.star
+        toPoints: interaction.pointers
+
+    galaxy_animation.startAnimation()
 
     # Setting what happens on collision
     collisionsHandler = new CollisionsHandler()
