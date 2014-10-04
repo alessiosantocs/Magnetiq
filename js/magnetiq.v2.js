@@ -808,13 +808,13 @@
         onDeviceMotion: function(a, b, g, event) {
           var array, star, _i, _len, _results;
           array = scene.toPointArray({
-            only: Star
+            only: Pointer
           });
           _results = [];
           for (_i = 0, _len = array.length; _i < _len; _i++) {
             star = array[_i];
-            star.x -= b / 2;
-            _results.push(star.y -= a / 2);
+            star.x += b * 3;
+            _results.push(star.y += a * 3);
           }
           return _results;
         },

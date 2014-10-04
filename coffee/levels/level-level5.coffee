@@ -38,10 +38,11 @@ levels.push new Level
         x: scene.width / 2
         y: scene.height / 2
       onDeviceMotion: (a, b, g, event)->
-        array = scene.toPointArray({only: Star})
+        array = scene.toPointArray({only: Pointer})
         for star in array
-          star.x -= b / 2
-          star.y -= a / 2
+          star.x += b * 3
+          star.y += a * 3
+
       onTouchInteraction: (x, y, deltaX, deltaY)->
         universe.x += deltaX / 2
         universe.y += deltaY / 2
