@@ -2,7 +2,7 @@
 # Push a new level into the array of levels
 levels.push new Level
   id: "endgame"
-  nextLevelId: "endgame"
+  nextLevelId: "level0"
   name: "Game over"
   tip: "you did well"
   fn: (scene, level)->
@@ -51,9 +51,21 @@ levels.push new Level
             #             stopAnimation = true
             #             console.log "start new"
             #       , 1000
-    , 7000
+    , 4000
 
     # Set some values in the scene
     scene.universes = [universe]
     scene.interaction = interaction
     # scene.animations.push orbitalAnimation
+
+    # Setting what happens on collision
+    collisionsHandler = new CollisionsHandler()
+    ccc = collisionsHandler.onCollisionAmongst scene.toPointArray({skipInteraction: true}), [scene.interaction.pointers[0].track.head()], (collisions)->
+      for collision in collisions
+        # console.log collision
+        if collision.basePoint instanceof Star
+          clearInterval ccc
+          level.end(true)
+        else if collision.basePoint instanceof Corps
+          clearInterval ccc
+          level.end(false)

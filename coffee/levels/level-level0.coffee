@@ -2,7 +2,7 @@
 # Push a new level into the array of levels
 levels.push new Level
   id: "level0"
-  nextLevelId: "level0"
+  nextLevelId: "level1"
   name: "One day in the universe"
   tip: ""
   fn: (scene, level)->
@@ -33,13 +33,15 @@ levels.push new Level
         randomY = Math.floor(Math.random()*150 + 100)
         randomX = Math.floor(Math.random()*randomY * 2 + 100)
 
+        console.log "Move from (#{interaction.pointers[0].x}, #{interaction.pointers[0].y}) to (#{randomX}, #{randomY})"
+
         # Temporary fix to crashes
-        if Math.abs(interaction.pointers[0].x - randomX) < 50
-          console.log "Too short"
-          randomX += 100
-        if Math.abs(interaction.pointers[0].x - randomX) < 50
-          console.log "Too short"
-          randomX += 50
+        # if Math.abs(interaction.pointers[0].x - randomX) < 50
+        #   console.log "Too short"
+        #   randomX += 100
+        # if Math.abs(interaction.pointers[0].x - randomX) < 50
+        #   console.log "Too short"
+        #   randomX += 50
 
         interaction.pointers[0].moveToAnimated
           toPoints: [new Point({x: randomX, y: randomY})]

@@ -36,8 +36,8 @@ levels.push new Level
     interaction = new Interaction
       canvas: document.getElementById("magnetiq")
       defaultPoint: new Point
-        x: -100
-        y: scene.height + 150
+        x: -20
+        y: scene.height + 20
       # onDeviceMotion: (a, b, g, event)->
       #   array = scene.toPointArray({only: Pointer})
       #   for star in array

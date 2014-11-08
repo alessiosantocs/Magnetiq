@@ -364,11 +364,11 @@
 
   levels.push(new Level({
     id: "endgame",
-    nextLevelId: "endgame",
+    nextLevelId: "level0",
     name: "Game over",
     tip: "you did well",
     fn: function(scene, level) {
-      var galaxy, interaction, universe;
+      var ccc, collisionsHandler, galaxy, interaction, universe;
       universe = new Universe();
       galaxy = level.createGalaxyIntoUniverse(universe, {
         star: {
@@ -419,15 +419,35 @@
             });
           }
         });
-      }, 7000);
+      }, 4000);
       scene.universes = [universe];
-      return scene.interaction = interaction;
+      scene.interaction = interaction;
+      collisionsHandler = new CollisionsHandler();
+      return ccc = collisionsHandler.onCollisionAmongst(scene.toPointArray({
+        skipInteraction: true
+      }), [scene.interaction.pointers[0].track.head()], function(collisions) {
+        var collision, _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = collisions.length; _i < _len; _i++) {
+          collision = collisions[_i];
+          if (collision.basePoint instanceof Star) {
+            clearInterval(ccc);
+            _results.push(level.end(true));
+          } else if (collision.basePoint instanceof Corps) {
+            clearInterval(ccc);
+            _results.push(level.end(false));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      });
     }
   }));
 
   levels.push(new Level({
     id: "level0",
-    nextLevelId: "level0",
+    nextLevelId: "level1",
     name: "One day in the universe",
     tip: "",
     fn: function(scene, level) {
@@ -458,14 +478,7 @@
         if (!stopAnimation) {
           randomY = Math.floor(Math.random() * 150 + 100);
           randomX = Math.floor(Math.random() * randomY * 2 + 100);
-          if (Math.abs(interaction.pointers[0].x - randomX) < 50) {
-            console.log("Too short");
-            randomX += 100;
-          }
-          if (Math.abs(interaction.pointers[0].x - randomX) < 50) {
-            console.log("Too short");
-            randomX += 50;
-          }
+          console.log("Move from (" + interaction.pointers[0].x + ", " + interaction.pointers[0].y + ") to (" + randomX + ", " + randomY + ")");
           return interaction.pointers[0].moveToAnimated({
             toPoints: [
               new Point({
@@ -709,8 +722,8 @@
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
         defaultPoint: new Point({
-          x: -100,
-          y: scene.height + 150
+          x: -20,
+          y: scene.height + 20
         })
       });
       galaxy1.star.moveToAnimated({
