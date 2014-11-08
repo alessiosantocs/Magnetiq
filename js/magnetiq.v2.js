@@ -159,17 +159,31 @@
     };
 
     MoveToAnimation.prototype.calculatePointPositionInTime = function(time, fromPoint, toPoint) {
-      var point, slope, x, y;
+      var fromX, fromY, point, slope, toX, toY, x, y;
       if (toPoint.x < fromPoint.x) {
         time *= -1;
       }
-      slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x);
+      fromX = parseFloat(fromPoint.x.toFixed(2));
+      fromY = parseFloat(fromPoint.y.toFixed(2));
+      toX = parseFloat(toPoint.x.toFixed(2));
+      toY = parseFloat(toPoint.y.toFixed(2));
+      slope = (toY - fromY) / (toX - fromX);
       x = time + this.originalX;
-      y = slope * x - slope * fromPoint.x + fromPoint.y;
+      y = slope * x - slope * fromX + fromY;
+      if (fromX === toX && fromY !== toY) {
+        if (toPoint.y < fromPoint.y) {
+          time *= -1;
+        }
+        y = time + this.originalY;
+        x = fromX;
+      }
       point = new Point({
         x: x,
         y: y
       });
+      if (isNaN(slope)) {
+        point = toPoint;
+      }
       return point;
     };
 
@@ -447,7 +461,7 @@
 
   levels.push(new Level({
     id: "level0",
-    nextLevelId: "level1",
+    nextLevelId: "level0",
     name: "One day in the universe",
     tip: "",
     fn: function(scene, level) {
@@ -522,8 +536,7 @@
                         secondaryMessage: "I want to see every single one",
                         autoDismissAfter: 4000,
                         onMessageHidden: function() {
-                          stopAnimation = true;
-                          return console.log("start new");
+                          return stopAnimation = true;
                         }
                       });
                     }, 1000);
@@ -1392,7 +1405,7 @@
 
     Pointer.prototype.update = function() {
       var coeffX, coeffY, dX, dY, next_point, point, smooth_coefficent, track_head, x, y, _i, _len, _ref, _results;
-      smooth_coefficent = 5;
+      smooth_coefficent = 10;
       track_head = this.track.head();
       dX = Math.abs(this.x - track_head.x);
       dY = Math.abs(this.y - track_head.y);

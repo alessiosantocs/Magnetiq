@@ -55,7 +55,7 @@ class Pointer extends Point
 
   # I use it to smooth out the tail and the head of the pointer
   update: ->
-    smooth_coefficent = 5
+    smooth_coefficent = 10
 
     track_head = @track.head()
     dX = Math.abs(@x - track_head.x)

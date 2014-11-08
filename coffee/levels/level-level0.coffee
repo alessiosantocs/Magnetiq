@@ -2,7 +2,7 @@
 # Push a new level into the array of levels
 levels.push new Level
   id: "level0"
-  nextLevelId: "level1"
+  nextLevelId: "level0"
   name: "One day in the universe"
   tip: ""
   fn: (scene, level)->
@@ -85,7 +85,7 @@ levels.push new Level
                       autoDismissAfter: 4000
                       onMessageHidden: ->
                         stopAnimation = true
-                        console.log "start new"
+                        # console.log "start new"
                   , 1000
     , 5000
     # setTimeout ->

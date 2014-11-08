@@ -22,13 +22,34 @@ class MoveToAnimation extends Animation
   calculatePointPositionInTime: (time, fromPoint, toPoint)->
     if toPoint.x < fromPoint.x
       time *= -1
-    slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x)
+
+    fromX = parseFloat fromPoint.x.toFixed(2)
+    fromY = parseFloat fromPoint.y.toFixed(2)
+
+    toX = parseFloat toPoint.x.toFixed(2)
+    toY = parseFloat toPoint.y.toFixed(2)
+
+    slope = (toY - fromY) / (toX - fromX)
+    # slope = 0 unless isFinite(slope)
+
+    # console.log "Slope => #{slope} = #{(toY - fromY)} / #{(toX - fromX)}"
+
     x = time + @originalX
-    y = slope * x - slope * fromPoint.x + fromPoint.y
+    y = slope * x - slope * fromX + fromY
+
+    if fromX is toX and fromY isnt toY
+      if toPoint.y < fromPoint.y
+        time *= -1
+
+      y = time + @originalY
+      x = fromX
 
     point = new Point
       x: x
       y: y
+
+    if isNaN(slope)
+      point = toPoint
 
     point
 
@@ -37,10 +58,10 @@ class MoveToAnimation extends Animation
   #
   #   xMove = yMove = 1
   #
-  #   if(toPoint.x < fromPoint.x)
+  #   if(toX < fromX)
   #       xMove *= -1
   #
-  #   if(toPoint.y < fromPoint.y)
+  #   if(toY < fromY)
   #       yMove *= -1
   #
   #   x = @previousPoint.x + xMove
