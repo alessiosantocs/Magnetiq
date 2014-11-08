@@ -461,7 +461,7 @@
 
   levels.push(new Level({
     id: "level0",
-    nextLevelId: "level0",
+    nextLevelId: "level1",
     name: "One day in the universe",
     tip: "",
     fn: function(scene, level) {
