@@ -27,11 +27,12 @@ levels.push new Level
       defaultPoint: new Point
         x: 500
         y: 150
-      onDeviceMotion: (a, b, g, event)->
-        array = scene.toPointArray({only: Pointer})
-        for star in array
-          star.x += b * 3
-          star.y += a * 3
+
+      # onDeviceMotion: (a, b, g, event)->
+      #   array = scene.toPointArray({only: Pointer})
+      #   for star in array
+      #     star.x += b * 3
+      #     star.y += a * 3
 
 
     # Set some values in the scene
@@ -53,6 +54,7 @@ levels.push new Level
       for collision in collisions
         # console.log collision
         if collision.basePoint instanceof Star
+          interaction = null
           clearInterval ccc
           level.end(true)
         else if collision.basePoint instanceof Corps

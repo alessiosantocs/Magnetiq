@@ -31,7 +31,7 @@
       ctx.fillStyle = this.fillColor;
       ctx.strokeStyle = this.strokeColor;
       ctx.lineWidth = this.strokeWidth;
-      ctx.arc(this.x, this.y, this.radius || 5, 0, Math.PI * 2, false);
+      ctx.arc(this.x << 0, this.y << 0, this.radius || 5, 0, Math.PI * 2, false);
       ctx.fill();
       if (this.strokeWidth > 0) {
         return ctx.stroke();
@@ -159,18 +159,14 @@
     };
 
     MoveToAnimation.prototype.calculatePointPositionInTime = function(time, fromPoint, toPoint) {
-      var point, x, xMove, y, yMove;
-      this.previousPoint || (this.previousPoint = fromPoint);
-      xMove = yMove = 1;
+      var point, slope, x, y;
       if (toPoint.x < fromPoint.x) {
-        xMove *= -1;
+        time *= -1;
       }
-      if (toPoint.y < fromPoint.y) {
-        yMove *= -1;
-      }
-      x = this.previousPoint.x + xMove;
-      y = this.previousPoint.y + yMove;
-      this.previousPoint = point = new Point({
+      slope = (toPoint.y - fromPoint.y) / (toPoint.x - fromPoint.x);
+      x = time + this.originalX;
+      y = slope * x - slope * fromPoint.x + fromPoint.y;
+      point = new Point({
         x: x,
         y: y
       });
@@ -268,15 +264,17 @@
 
     PulseOrbitAnimation.prototype.radiusValueFromTimestamp = function(timestamp) {
       var radius;
-      radius = Math.abs(Math.sin(timestamp / 15) * this.maxRadius) + this.minRadius;
+      radius = Math.abs(Math.sin(timestamp / 30) * this.maxRadius) + this.minRadius;
       return radius;
     };
 
     PulseOrbitAnimation.prototype.renderAnimation = function() {
       var radius;
       this.timestamp += 1;
-      console.log(this.timestamp);
       radius = this.radiusValueFromTimestamp(this.timestamp);
+      if (radius > this.maxRadius) {
+        this.stopAnimation();
+      }
       return this.ring.radius = radius;
     };
 
@@ -365,10 +363,73 @@
   levels = new Levels();
 
   levels.push(new Level({
+    id: "endgame",
+    nextLevelId: "endgame",
+    name: "Game over",
+    tip: "you did well",
+    fn: function(scene, level) {
+      var galaxy, interaction, universe;
+      universe = new Universe();
+      galaxy = level.createGalaxyIntoUniverse(universe, {
+        star: {
+          x: scene.width + 100,
+          y: scene.height / 2,
+          marginRadius: 20
+        },
+        corpses: {
+          quantity: 3
+        },
+        radius: 5
+      });
+      galaxy.star.moveToAnimated({
+        toPoints: [
+          new Point({
+            x: scene.width - 100,
+            y: scene.height / 2
+          })
+        ]
+      });
+      interaction = new Interaction({
+        canvas: document.getElementById("magnetiq"),
+        defaultPoint: new Point({
+          x: -50,
+          y: scene.height / 2
+        })
+      });
+      interaction.pointers[0].moveToAnimated({
+        toPoints: [
+          new Point({
+            x: 100,
+            y: scene.height / 2
+          })
+        ]
+      });
+      setTimeout(function() {
+        return scene["interface"].displayMessage("Magnetiq", {
+          autoDismissAfter: 4000,
+          onMessageHidden: function() {
+            return scene["interface"].displayMessage("Made with love by", {
+              autoDismissAfter: 3000,
+              onMessageHidden: function() {
+                return scene["interface"].displayMessage("Alessio and Salvatore", {
+                  secondaryMessage: "thank you for playing <3",
+                  autoDismissAfter: 4000
+                });
+              }
+            });
+          }
+        });
+      }, 7000);
+      scene.universes = [universe];
+      return scene.interaction = interaction;
+    }
+  }));
+
+  levels.push(new Level({
     id: "level0",
-    nextLevelId: "level1",
-    name: "Beginning",
-    tip: "One day in the universe",
+    nextLevelId: "level0",
+    name: "One day in the universe",
+    tip: "",
     fn: function(scene, level) {
       var ccc, collisionsHandler, galaxy, generateAnimation, interaction, stopAnimation, universe;
       universe = new Universe();
@@ -396,7 +457,15 @@
         var randomX, randomY;
         if (!stopAnimation) {
           randomY = Math.floor(Math.random() * 150 + 100);
-          randomX = Math.floor(Math.random() * randomY * 2.5);
+          randomX = Math.floor(Math.random() * randomY * 2 + 100);
+          if (Math.abs(interaction.pointers[0].x - randomX) < 50) {
+            console.log("Too short");
+            randomX += 100;
+          }
+          if (Math.abs(interaction.pointers[0].x - randomX) < 50) {
+            console.log("Too short");
+            randomX += 50;
+          }
           return interaction.pointers[0].moveToAnimated({
             toPoints: [
               new Point({
@@ -412,10 +481,13 @@
           return interaction.pointers[0].moveToAnimated({
             toPoints: [
               new Point({
-                x: 500,
-                y: 150
+                x: scene.width + 100,
+                y: scene.height / 2
               })
-            ]
+            ],
+            onAnimationEnd: function() {
+              return level.end(true);
+            }
           });
         }
       };
@@ -432,6 +504,7 @@
                   autoDismissAfter: 4000,
                   onMessageHidden: function() {
                     return setTimeout(function() {
+                      stopAnimation = true;
                       return scene["interface"].displayMessage("I'd love to see them!", {
                         secondaryMessage: "I want to see every single one",
                         autoDismissAfter: 4000,
@@ -476,16 +549,16 @@
 
   levels.push(new Level({
     id: "level1",
-    nextLevelId: "level2",
-    name: "one",
-    tip: "eat",
+    nextLevelId: "level3",
+    name: "collect stars energy",
+    tip: "make travel possible",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, interaction, universe;
+      var ccc, collisionsHandler, galaxy, interaction, universe;
       universe = new Universe();
-      level.createGalaxyIntoUniverse(universe, {
+      galaxy = level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: 200,
-          y: 150,
+          x: scene.width + 200,
+          y: scene.height / 2,
           marginRadius: 20
         },
         corpses: {
@@ -493,29 +566,28 @@
         },
         radius: 25
       });
+      galaxy.star.moveToAnimated({
+        toPoints: [
+          new Point({
+            x: scene.width - 100,
+            y: scene.height / 2
+          })
+        ]
+      });
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
         defaultPoint: new Point({
-          x: 500,
-          y: 150
-        }),
-        onTouchInteraction: function(x, y, deltaX, deltaY) {
-          universe.x += deltaX / 2;
-          return universe.y += deltaY / 2;
-        },
-        onDeviceMotion: function(a, b, g, event) {
-          var array, star, _i, _len, _results;
-          array = scene.toPointArray({
-            only: Pointer
-          });
-          _results = [];
-          for (_i = 0, _len = array.length; _i < _len; _i++) {
-            star = array[_i];
-            star.x += b * 3;
-            _results.push(star.y += a * 3);
-          }
-          return _results;
-        }
+          x: -50,
+          y: scene.height / 2
+        })
+      });
+      interaction.pointers[0].moveToAnimated({
+        toPoints: [
+          new Point({
+            x: 100,
+            y: scene.height / 2
+          })
+        ]
       });
       scene.universes = [universe];
       scene.interaction = interaction;
@@ -567,20 +639,7 @@
         defaultPoint: new Point({
           x: 500,
           y: 150
-        }),
-        onDeviceMotion: function(a, b, g, event) {
-          var array, star, _i, _len, _results;
-          array = scene.toPointArray({
-            only: Pointer
-          });
-          _results = [];
-          for (_i = 0, _len = array.length; _i < _len; _i++) {
-            star = array[_i];
-            star.x += b * 3;
-            _results.push(star.y += a * 3);
-          }
-          return _results;
-        }
+        })
       });
       scene.universes = [universe];
       scene.interaction = interaction;
@@ -599,6 +658,7 @@
         for (_i = 0, _len = collisions.length; _i < _len; _i++) {
           collision = collisions[_i];
           if (collision.basePoint instanceof Star) {
+            interaction = null;
             clearInterval(ccc);
             _results.push(level.end(true));
           } else if (collision.basePoint instanceof Corps) {
@@ -616,16 +676,16 @@
 
   levels.push(new Level({
     id: "level3",
-    nextLevelId: "level4",
-    name: "three",
-    tip: "faster",
+    nextLevelId: "endgame",
+    name: "exploring possibilities",
+    tip: "collect two stars",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, interaction, universe;
+      var ccc, collisionsHandler, galaxy1, galaxy2, interaction, universe;
       universe = new Universe();
-      level.createGalaxyIntoUniverse(universe, {
+      galaxy1 = level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: 20,
-          y: 20,
+          x: -200,
+          y: -200,
           marginRadius: 40,
           gravitationalForce: 6
         },
@@ -634,10 +694,10 @@
         },
         radius: 45
       });
-      level.createGalaxyIntoUniverse(universe, {
+      galaxy2 = level.createGalaxyIntoUniverse(universe, {
         star: {
-          x: scene.width - 40,
-          y: scene.height - 40,
+          x: scene.width + 200,
+          y: scene.height + 200,
           marginRadius: 30,
           gravitationalForce: 8
         },
@@ -649,22 +709,33 @@
       interaction = new Interaction({
         canvas: document.getElementById("magnetiq"),
         defaultPoint: new Point({
-          x: scene.width / 3.5,
-          y: scene.height - 30
-        }),
-        onDeviceMotion: function(a, b, g, event) {
-          var array, star, _i, _len, _results;
-          array = scene.toPointArray({
-            only: Pointer
-          });
-          _results = [];
-          for (_i = 0, _len = array.length; _i < _len; _i++) {
-            star = array[_i];
-            star.x += b * 3;
-            _results.push(star.y += a * 3);
-          }
-          return _results;
-        }
+          x: -100,
+          y: scene.height + 150
+        })
+      });
+      galaxy1.star.moveToAnimated({
+        toPoints: [
+          new Point({
+            x: 20,
+            y: 20
+          })
+        ]
+      });
+      galaxy2.star.moveToAnimated({
+        toPoints: [
+          new Point({
+            x: scene.width - 40,
+            y: scene.height - 40
+          })
+        ]
+      });
+      interaction.pointers[0].moveToAnimated({
+        toPoints: [
+          new Point({
+            x: 150,
+            y: scene.height - 30
+          })
+        ]
       });
       scene.universes = [universe];
       scene.interaction = interaction;
@@ -1037,6 +1108,7 @@
           pageX = touch.pageX;
           pageY = touch.pageY;
           interaction.onTouchInteraction(pageX, pageY, deltaX, deltaY);
+          interaction.pointers[0].recordMovement(pageX, pageY, deltaX, deltaY);
           return currentTouchEvent = event;
         }
       });
@@ -1174,9 +1246,12 @@
     };
 
     drawSceneIntoCanvasFn = function(scene, canvas, ctx, final_ctx) {
-      var object, objects, _i, _len;
+      var object, objects, pointer, _i, _len;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       objects = scene.toPointArray();
+      pointer = scene.toPointArray({
+        only: Pointer
+      });
       for (_i = 0, _len = objects.length; _i < _len; _i++) {
         object = objects[_i];
         ctx.beginPath();
@@ -1209,8 +1284,6 @@
       this.pre_ctx = this.pre_canvas.getContext("2d");
       this.canvas.width = this.pre_canvas.width = this.scene.width = window.innerWidth;
       this.canvas.height = this.pre_canvas.height = this.scene.height = window.innerHeight;
-      this.pre_canvas.width *= 5;
-      this.pre_canvas.height *= 5;
       return drawSceneIntoCanvas(this.scene, this.pre_canvas, this.pre_ctx, this.ctx);
     };
 
@@ -1228,7 +1301,7 @@
       Orbit.__super__.constructor.call(this, options);
       this.borderColor = options.borderColor;
       this.fillColor = null;
-      this.borderColor || (this.borderColor = "#aeff00");
+      this.borderColor || (this.borderColor = "#333");
     }
 
     Orbit.prototype.drawIntoCanvas = function(ctx) {
@@ -1250,40 +1323,68 @@
     trackLengthLimit = 50;
 
     function Pointer(options) {
+      var pickupAnimation;
       if (options == null) {
         options = {};
       }
       Pointer.__super__.constructor.call(this, options);
       this.pickupRadius = options.pickupRadius;
-      this.pickupRadius || (this.pickupRadius = 150);
+      this.pickupRadius || (this.pickupRadius = 200);
       this.fillColor = "#aeff00";
       this.radius = 5;
       options.defaultPoint || (options.defaultPoint = new Point({
         x: 0,
         y: 0
       }));
+      this.pickupPoint = new Orbit({
+        x: options.defaultPoint.x,
+        y: options.defaultPoint.y,
+        radius: 1
+      });
+      pickupAnimation = new PulseOrbitAnimation({
+        ring: this.pickupPoint,
+        minRadius: 1,
+        maxRadius: this.pickupRadius
+      });
       this.x = options.defaultPoint.x;
       this.y = options.defaultPoint.y;
       this.track = new Track(50, options.defaultPoint);
     }
 
-    Pointer.prototype.recordMovement = function(x, y) {
-      var distance, dx, dy;
+    Pointer.prototype.recordMovement = function(x, y, deltaX, deltaY) {
+      var distance, dx, dy, realX, realY;
+      if (deltaX == null) {
+        deltaX = null;
+      }
+      if (deltaY == null) {
+        deltaY = null;
+      }
+      realX = x;
+      realY = y;
+      if (deltaX != null) {
+        realX = this.x + deltaX;
+      }
+      if (deltaY != null) {
+        realY = this.y + deltaY;
+      }
       dx = x - this.x;
       dy = y - this.y;
       distance = Math.sqrt(dx * dx + dy * dy);
       if (distance < this.pickupRadius) {
-        this.x = x;
-        return this.y = y;
+        this.pickupPoint.radius = 0;
+        this.x = realX;
+        return this.y = realY;
       }
     };
 
     Pointer.prototype.update = function() {
       var coeffX, coeffY, dX, dY, next_point, point, smooth_coefficent, track_head, x, y, _i, _len, _ref, _results;
-      smooth_coefficent = 10;
+      smooth_coefficent = 5;
       track_head = this.track.head();
       dX = Math.abs(this.x - track_head.x);
       dY = Math.abs(this.y - track_head.y);
+      this.pickupPoint.x = track_head.x;
+      this.pickupPoint.y = track_head.y;
       x = 0;
       y = 0;
       coeffX = dX / smooth_coefficent;
@@ -1317,6 +1418,7 @@
     Pointer.prototype.drawIntoCanvas = function(ctx) {
       var point, pointer_color, previous_point, _i, _len, _ref;
       this.update();
+      this.pickupPoint.drawIntoCanvas(ctx);
       pointer_color = this.fillColor;
       ctx.fillStyle = pointer_color;
       ctx.strokeStyle = pointer_color;
@@ -1558,7 +1660,16 @@
   })(Point);
 
   window.onload = function() {
-    var engine, scene;
+    var checkOrientation, engine, scene;
+    checkOrientation = function() {
+      if ((window.orientation != null) && window.orientation === 0) {
+        return document.getElementById("wrong-device-orientation").style.display = "block";
+      }
+    };
+    checkOrientation();
+    window.addEventListener("orientationchange", function() {
+      return checkOrientation();
+    });
     scene = new Scene();
     window.scene = scene;
     engine = new MagnetiqEngine({
@@ -1566,7 +1677,7 @@
       scene: scene
     });
     engine.startEngine();
-    return scene.setLevel(levels.getLevel("level5"));
+    return scene.setLevel(levels.getLevel("level0"));
   };
 
 }).call(this);

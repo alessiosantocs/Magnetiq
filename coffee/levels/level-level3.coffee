@@ -2,18 +2,18 @@
 # Push a new level into the array of levels
 levels.push new Level
   id: "level3"
-  nextLevelId: "level4"
-  name: "three"
-  tip: "faster"
+  nextLevelId: "endgame"
+  name: "exploring possibilities"
+  tip: "collect two stars"
   fn: (scene, level)->
 
     universe = new Universe()
 
     # Function defined in levels.coffee
-    level.createGalaxyIntoUniverse universe,
+    galaxy1 = level.createGalaxyIntoUniverse universe,
       star:
-        x: 20
-        y: 20
+        x: -200
+        y: -200
         marginRadius: 40
         gravitationalForce: 6
       corpses:
@@ -21,10 +21,10 @@ levels.push new Level
       radius: 45
 
     # Create a second galaxy
-    level.createGalaxyIntoUniverse universe,
+    galaxy2 = level.createGalaxyIntoUniverse universe,
       star:
-        x: scene.width - 40
-        y: scene.height - 40
+        x: scene.width + 200
+        y: scene.height + 200
         marginRadius: 30
         gravitationalForce: 8
       corpses:
@@ -36,14 +36,21 @@ levels.push new Level
     interaction = new Interaction
       canvas: document.getElementById("magnetiq")
       defaultPoint: new Point
-        x: scene.width / 3.5
-        y: scene.height - 30
-      onDeviceMotion: (a, b, g, event)->
-        array = scene.toPointArray({only: Pointer})
-        for star in array
-          star.x += b * 3
-          star.y += a * 3
+        x: -100
+        y: scene.height + 150
+      # onDeviceMotion: (a, b, g, event)->
+      #   array = scene.toPointArray({only: Pointer})
+      #   for star in array
+      #     star.x += b * 3
+      #     star.y += a * 3
 
+    galaxy1.star.moveToAnimated
+      toPoints: [new Point({x: 20, y: 20})]
+    galaxy2.star.moveToAnimated
+      toPoints: [new Point({x: scene.width - 40, y: scene.height - 40})]
+
+    interaction.pointers[0].moveToAnimated
+      toPoints: [new Point({x: 150, y: scene.height - 30})]
 
     # Set some values in the scene
     scene.universes = [universe]

@@ -39,7 +39,7 @@ class Interaction
         pageY = touch.pageY
 
         interaction.onTouchInteraction(pageX, pageY, deltaX, deltaY)
-        # interaction.pointers[0].recordMovement touch.pageX - 40, touch.pageY - 40
+        interaction.pointers[0].recordMovement pageX, pageY, deltaX, deltaY
 
         currentTouchEvent = event
 
@@ -48,6 +48,7 @@ class Interaction
       event.preventDefault()
       currentTouchEvent = event
       console.log currentTouchEvent
+
     @canvas.addEventListener "touchend", (event)->
       event.preventDefault()
 
@@ -75,11 +76,10 @@ class Interaction
       accelerationY = event.accelerationIncludingGravity.y - initialMotionEvent.accelerationIncludingGravity.y
       accelerationZ = event.accelerationIncludingGravity.z - initialMotionEvent.accelerationIncludingGravity.z
 
-
-
       # A simple threshold
       accelerationY = 0 if Math.abs(accelerationY) < 0.3
       accelerationX = 0 if Math.abs(accelerationX) < 0.3
+
       interaction.onDeviceMotion(accelerationX, accelerationY, accelerationZ, event)
       true
 

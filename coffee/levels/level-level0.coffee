@@ -2,9 +2,9 @@
 # Push a new level into the array of levels
 levels.push new Level
   id: "level0"
-  nextLevelId: "level1"
-  name: "Beginning"
-  tip: "One day in the universe"
+  nextLevelId: "level0"
+  name: "One day in the universe"
+  tip: ""
   fn: (scene, level)->
 
     universe = new Universe()
@@ -31,14 +31,25 @@ levels.push new Level
     generateAnimation = ->
       unless stopAnimation
         randomY = Math.floor(Math.random()*150 + 100)
-        randomX = Math.floor(Math.random()*randomY * 2.5)
+        randomX = Math.floor(Math.random()*randomY * 2 + 100)
+
+        # Temporary fix to crashes
+        if Math.abs(interaction.pointers[0].x - randomX) < 50
+          console.log "Too short"
+          randomX += 100
+        if Math.abs(interaction.pointers[0].x - randomX) < 50
+          console.log "Too short"
+          randomX += 50
+
         interaction.pointers[0].moveToAnimated
           toPoints: [new Point({x: randomX, y: randomY})]
           onAnimationEnd: ->
             generateAnimation()
       else
         interaction.pointers[0].moveToAnimated
-          toPoints: [new Point({x: 500, y: 150})]
+          toPoints: [new Point({x: scene.width + 100, y: scene.height / 2})]
+          onAnimationEnd: ->
+            level.end(true)
     # Animate the pointer to make it float around the screen
     # anim = new MoveToAnimation
     #   point: interaction.pointers[0]
@@ -66,6 +77,7 @@ levels.push new Level
                 autoDismissAfter: 4000
                 onMessageHidden: ->
                   setTimeout ->
+                    stopAnimation = true
                     scene.interface.displayMessage "I'd love to see them!",
                       secondaryMessage: "I want to see every single one"
                       autoDismissAfter: 4000

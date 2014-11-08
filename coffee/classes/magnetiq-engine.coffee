@@ -21,6 +21,9 @@ class MagnetiqEngine
     # Vectorize the entire scene
     objects = scene.toPointArray()
 
+    pointer = scene.toPointArray({only: Pointer})
+    # canvas.width = pointer.x
+
     # Add every object (canvas ready object) to the scene
     for object in objects
       ctx.beginPath()
@@ -50,8 +53,5 @@ class MagnetiqEngine
 
     @canvas.width = @pre_canvas.width = @scene.width = window.innerWidth
     @canvas.height = @pre_canvas.height = @scene.height = window.innerHeight
-
-    @pre_canvas.width *= 5
-    @pre_canvas.height *= 5
 
     drawSceneIntoCanvas(@scene, @pre_canvas, @pre_ctx, @ctx)

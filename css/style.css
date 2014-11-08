@@ -5,6 +5,7 @@ body{
 	background:#222;
 	margin: 0;
 	overflow: hidden;
+
 }
 #menu {
 	position: absolute;
@@ -42,11 +43,16 @@ body{
 	opacity: 0;
 	z-index: 2;
 	position: relative;
+
+}
+
+#interface .standard-message .message-main{
+	letter-spacing: 1px;
 }
 
 #interface .standard-message .message-secondary{
 	font-size: 18px;
-	opacity: 0.5;
+	opacity: 0.8;
 	display: block;
 }
 
@@ -92,4 +98,27 @@ body{
 	color: #888;
 	font-family: roboto;
 	font-size: 12px;
+}
+
+
+#wrong-device-orientation{
+	display: none;
+	position: fixed;
+	top: 0; left: 0; right: 0; bottom: 0;
+
+	background: #222;
+
+	font-size: 25px;
+	font-family: "Raleway Dots", sans-serif;
+	color: #CCC;
+
+	z-index: 10;
+
+	padding-top: 20%;
+	text-align: center;
+}
+
+a{
+	color: inherit;
+	font-weight: bold;
 }

@@ -25,7 +25,7 @@ class Point
     ctx.fillStyle = @fillColor
     ctx.strokeStyle = @strokeColor
     ctx.lineWidth = @strokeWidth
-    ctx.arc(@x, @y, @radius || 5, 0, Math.PI * 2, false)
+    ctx.arc(@x << 0, @y << 0, @radius || 5, 0, Math.PI * 2, false)
     ctx.fill()
     ctx.stroke() if @strokeWidth > 0
 

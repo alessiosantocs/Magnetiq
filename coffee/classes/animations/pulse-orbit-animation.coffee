@@ -8,14 +8,14 @@ class PulseOrbitAnimation extends Animation
 
   constructor: (options)->
     super options
-    
+
     {@ring, @minRadius, @maxRadius} = options
     @timestamp = 0
 
   # Calculate a point's x and y
   radiusValueFromTimestamp: (timestamp)->
 
-    radius = Math.abs(Math.sin(timestamp / 15) * @maxRadius) + @minRadius
+    radius = Math.abs(Math.sin(timestamp / 30) * @maxRadius) + @minRadius
 
     radius
 
@@ -24,7 +24,9 @@ class PulseOrbitAnimation extends Animation
     @timestamp += 1
     # if @timestamp > 20
     #   @timestamp = 0
-    console.log @timestamp
     radius = @radiusValueFromTimestamp(@timestamp)
+
+    if radius > @maxRadius
+      @stopAnimation()
 
     @ring.radius = radius

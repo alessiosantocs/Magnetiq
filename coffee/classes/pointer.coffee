@@ -6,7 +6,7 @@ class Pointer extends Point
     {@pickupRadius} = options
 
     # Default pickup radius
-    @pickupRadius ||= 150
+    @pickupRadius ||= 200
     @fillColor = "#aeff00"
     @radius = 5
 
@@ -15,17 +15,19 @@ class Pointer extends Point
       y: 0
 
     # Trying pickup animation
-    # @pickupPoint = new Orbit
-    #   x: options.defaultPoint.x
-    #   y: options.defaultPoint.y
-    #   radius: 50
-    #
-    # pickupAnimation = new PulseOrbitAnimation
-    #   ring: @pickupPoint
-    #   minRadius: 10
-    #   maxRadius: 50
+    @pickupPoint = new Orbit
+      x: options.defaultPoint.x
+      y: options.defaultPoint.y
+      radius: 1
 
-    # pickupAnimation.startAnimation()
+    pickupAnimation = new PulseOrbitAnimation
+      ring: @pickupPoint
+      minRadius: 1
+      maxRadius: @pickupRadius
+
+    # setTimeout(->
+    #   pickupAnimation.startAnimation()
+    # , 4000)
 
     @x = options.defaultPoint.x
     @y = options.defaultPoint.y
@@ -33,22 +35,34 @@ class Pointer extends Point
     @track = new Track(50, options.defaultPoint)
 
 
-  recordMovement: (x, y)->
+  recordMovement: (x, y, deltaX=null, deltaY=null)->
+
+    realX = x
+    realY = y
+    if deltaX?
+      realX = @x + deltaX
+    if deltaY?
+      realY = @y + deltaY
+
     dx = x - @x
     dy = y - @y
     distance = Math.sqrt(dx*dx + dy*dy)
 
     if distance < @pickupRadius
-      @x = x
-      @y = y
+      @pickupPoint.radius = 0
+      @x = realX
+      @y = realY
 
   # I use it to smooth out the tail and the head of the pointer
   update: ->
-    smooth_coefficent = 10
+    smooth_coefficent = 5
 
     track_head = @track.head()
     dX = Math.abs(@x - track_head.x)
     dY = Math.abs(@y - track_head.y)
+
+    @pickupPoint.x = track_head.x
+    @pickupPoint.y = track_head.y
 
     x = 0
     y = 0
@@ -76,6 +90,8 @@ class Pointer extends Point
 
   drawIntoCanvas: (ctx)->
     @update()
+
+    @pickupPoint.drawIntoCanvas(ctx)
 
     pointer_color = @fillColor
     ctx.fillStyle = pointer_color
@@ -106,6 +122,3 @@ class Pointer extends Point
       ctx.fillStyle = pointer_color
       ctx.arc(@track.head().x, @track.head().y, @radius || 5, 0, Math.PI * 2, false)
       ctx.fill()
-
-
-    # @pickupPoint.drawIntoCanvas(ctx)
