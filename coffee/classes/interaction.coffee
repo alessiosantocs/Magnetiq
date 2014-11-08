@@ -25,31 +25,39 @@ class Interaction
       interaction.pointers[0].recordMovement event.pageX, event.pageY unless interaction.ignoreUserInteraction
 
     currentTouchEvent = null
+    firstCurrentTouch = {pageX: null, pageY: null}
     # Listen for touch events
-    @canvas.addEventListener "touchmove", (event)->
+    @canvas.ontouchmove = (event)->
       event.preventDefault()
       unless interaction.ignoreUserInteraction
-        firstCurrentTouch = currentTouchEvent.touches[0]
+        # firstCurrentTouch = currentTouchEvent.touches[0]
         touch = event.touches[0]
 
         deltaX = touch.pageX - firstCurrentTouch.pageX
         deltaY = touch.pageY - firstCurrentTouch.pageY
-
+        console.log "That => (#{touch.pageX}, #{touch.pageY}) (#{firstCurrentTouch.pageX}, #{firstCurrentTouch.pageY})"
+        console.log "currentTouchEvent = ",currentTouchEvent
         pageX = touch.pageX
         pageY = touch.pageY
 
         interaction.onTouchInteraction(pageX, pageY, deltaX, deltaY)
         interaction.pointers[0].recordMovement pageX, pageY, deltaX, deltaY
 
-        currentTouchEvent = event
+        console.log "not saving again"
+        firstCurrentTouch.pageX = pageX
+        firstCurrentTouch.pageY = pageY
+      true
 
     # Disallow default actions
-    @canvas.addEventListener "touchstart", (event)->
+    @canvas.ontouchstart = (event)->
       event.preventDefault()
       currentTouchEvent = event
+      firstCurrentTouch.pageX = event.touches[0].pageX
+      firstCurrentTouch.pageY = event.touches[0].pageY
+
       console.log currentTouchEvent
 
-    @canvas.addEventListener "touchend", (event)->
+    @canvas.ontouchend = (event)->
       event.preventDefault()
 
     # Tracking accelerator

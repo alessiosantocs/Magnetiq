@@ -7,6 +7,8 @@ window.onload = ->
   window.addEventListener "orientationchange", ->
     checkOrientation()
 
+  document.ontouchmove = (e)-> e.preventDefault() if document.ontouchmove
+
   # Initialize a scene
   scene = new Scene()
 

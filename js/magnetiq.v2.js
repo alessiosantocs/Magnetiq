@@ -787,7 +787,6 @@
             }
           } else if (collision.basePoint instanceof Corps) {
             clearInterval(ccc);
-            level.tip = "ouch";
             _results.push(level.end(false));
           } else {
             _results.push(void 0);
@@ -1098,7 +1097,7 @@
 
   Interaction = (function() {
     function Interaction(options) {
-      var currentTouchEvent, initialMotionEvent, interaction;
+      var currentTouchEvent, firstCurrentTouch, initialMotionEvent, interaction;
       if (options == null) {
         options = {};
       }
@@ -1123,29 +1122,39 @@
         }
       });
       currentTouchEvent = null;
-      this.canvas.addEventListener("touchmove", function(event) {
-        var deltaX, deltaY, firstCurrentTouch, pageX, pageY, touch;
+      firstCurrentTouch = {
+        pageX: null,
+        pageY: null
+      };
+      this.canvas.ontouchmove = function(event) {
+        var deltaX, deltaY, pageX, pageY, touch;
         event.preventDefault();
         if (!interaction.ignoreUserInteraction) {
-          firstCurrentTouch = currentTouchEvent.touches[0];
           touch = event.touches[0];
           deltaX = touch.pageX - firstCurrentTouch.pageX;
           deltaY = touch.pageY - firstCurrentTouch.pageY;
+          console.log("That => (" + touch.pageX + ", " + touch.pageY + ") (" + firstCurrentTouch.pageX + ", " + firstCurrentTouch.pageY + ")");
+          console.log("currentTouchEvent = ", currentTouchEvent);
           pageX = touch.pageX;
           pageY = touch.pageY;
           interaction.onTouchInteraction(pageX, pageY, deltaX, deltaY);
           interaction.pointers[0].recordMovement(pageX, pageY, deltaX, deltaY);
-          return currentTouchEvent = event;
+          console.log("not saving again");
+          firstCurrentTouch.pageX = pageX;
+          firstCurrentTouch.pageY = pageY;
         }
-      });
-      this.canvas.addEventListener("touchstart", function(event) {
+        return true;
+      };
+      this.canvas.ontouchstart = function(event) {
         event.preventDefault();
         currentTouchEvent = event;
+        firstCurrentTouch.pageX = event.touches[0].pageX;
+        firstCurrentTouch.pageY = event.touches[0].pageY;
         return console.log(currentTouchEvent);
-      });
-      this.canvas.addEventListener("touchend", function(event) {
+      };
+      this.canvas.ontouchend = function(event) {
         return event.preventDefault();
-      });
+      };
       initialMotionEvent = null;
       window.ondevicemotion = function(event) {
         var accelerationX, accelerationY, accelerationZ;
@@ -1696,6 +1705,11 @@
     window.addEventListener("orientationchange", function() {
       return checkOrientation();
     });
+    document.ontouchmove = function(e) {
+      if (document.ontouchmove) {
+        return e.preventDefault();
+      }
+    };
     scene = new Scene();
     window.scene = scene;
     engine = new MagnetiqEngine({

@@ -71,5 +71,4 @@ levels.push new Level
             level.end(true)
         else if collision.basePoint instanceof Corps
           clearInterval ccc
-          level.tip = "ouch"
           level.end(false)
