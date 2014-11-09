@@ -1704,10 +1704,18 @@
   })(Point);
 
   window.onload = function() {
-    var checkOrientation, engine, scene;
+    var checkOrientation, engine, originalOrientation, scene;
+    originalOrientation = window.orientation;
     checkOrientation = function() {
-      if ((window.orientation != null) && window.orientation === 0) {
-        return document.getElementById("wrong-device-orientation").style.display = "block";
+      if (window.orientation != null) {
+        if (window.orientation === 0) {
+          if (originalOrientation !== 0) {
+            document.getElementById("wrong-device-orientation").innerHTML = "Return to landscape orientation to continue to play. <br>You can <a href='javascript: window.location.reload()'>reload</a> if you want to.";
+          }
+          return document.getElementById("wrong-device-orientation").style.display = "block";
+        } else if (originalOrientation !== 0) {
+          return document.getElementById("wrong-device-orientation").style.display = "none";
+        }
       }
     };
     checkOrientation();
