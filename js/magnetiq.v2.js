@@ -465,7 +465,7 @@
     name: "One day in the universe",
     tip: "",
     fn: function(scene, level) {
-      var ccc, collisionsHandler, galaxy, generateAnimation, interaction, stopAnimation, universe;
+      var ccc, collisionsHandler, galaxy, generateAnimation, interaction, readyToFinish, stopAnimation, universe;
       universe = new Universe();
       galaxy = level.createGalaxyIntoUniverse(universe, {
         star: {
@@ -486,6 +486,7 @@
         }),
         ignoreUserInteraction: true
       });
+      readyToFinish = false;
       stopAnimation = false;
       generateAnimation = function() {
         var randomX, randomY;
@@ -513,7 +514,11 @@
               })
             ],
             onAnimationEnd: function() {
-              return level.end(true);
+              if (readyToFinish) {
+                return level.end(true);
+              } else {
+                return readyToFinish = true;
+              }
             }
           });
         }
@@ -536,7 +541,11 @@
                         secondaryMessage: "I want to see every single one",
                         autoDismissAfter: 4000,
                         onMessageHidden: function() {
-                          return stopAnimation = true;
+                          if (readyToFinish) {
+                            return level.end(true);
+                          } else {
+                            return readyToFinish = true;
+                          }
                         }
                       });
                     }, 1000);

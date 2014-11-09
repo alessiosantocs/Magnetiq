@@ -27,6 +27,8 @@ levels.push new Level
         y: 150
       ignoreUserInteraction: true
 
+    readyToFinish = false
+
     stopAnimation = false
     generateAnimation = ->
       unless stopAnimation
@@ -51,7 +53,10 @@ levels.push new Level
         interaction.pointers[0].moveToAnimated
           toPoints: [new Point({x: scene.width + 100, y: scene.height / 2})]
           onAnimationEnd: ->
-            level.end(true)
+            if readyToFinish
+              level.end(true)
+            else
+              readyToFinish = true
     # Animate the pointer to make it float around the screen
     # anim = new MoveToAnimation
     #   point: interaction.pointers[0]
@@ -84,8 +89,10 @@ levels.push new Level
                       secondaryMessage: "I want to see every single one"
                       autoDismissAfter: 4000
                       onMessageHidden: ->
-                        stopAnimation = true
-                        # console.log "start new"
+                        if readyToFinish
+                          level.end(true)
+                        else
+                          readyToFinish = true
                   , 1000
     , 5000
     # setTimeout ->
